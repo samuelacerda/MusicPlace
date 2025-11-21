@@ -1,0 +1,8 @@
+{
+  "name": "MusicPlace",
+  "description": "O marketplace definitivo para músicos. Compra, venda e troca de instrumentos com inteligência artificial.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
