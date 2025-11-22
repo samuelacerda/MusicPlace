@@ -9,6 +9,8 @@ import { PostAd } from './pages/PostAd';
 import { Services } from './pages/Services';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { BlogList } from './pages/blog/BlogList';
+import { BlogPostPage } from './pages/blog/BlogPost';
 
 // Admin Imports
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -24,6 +26,7 @@ import { AdminSettings } from './pages/admin/Settings';
 import { AdminTheme } from './pages/admin/Theme';
 import { AdminContent } from './pages/admin/Content';
 import { AdminMarketing } from './pages/admin/Marketing';
+import { AdminBlog } from './pages/admin/Blog';
 
 // Account Imports
 import { AccountLayout } from './pages/account/AccountLayout';
@@ -50,6 +53,7 @@ function App() {
         <Route path="/admin/content" element={<AdminLayout><AdminContent /></AdminLayout>} />
         <Route path="/admin/marketing" element={<AdminLayout><AdminMarketing /></AdminLayout>} />
         <Route path="/admin/reports" element={<AdminLayout><div>Em breve</div></AdminLayout>} />
+        <Route path="/admin/blog" element={<AdminLayout><AdminBlog /></AdminLayout>} />
 
         {/* Public Routes */}
         <Route path="*" element={
@@ -60,6 +64,8 @@ function App() {
               <Route path="/produto/:id" element={<ProductDetails />} />
               <Route path="/anunciar" element={<PostAd />} />
               <Route path="/servicos" element={<Services />} />
+              <Route path="/blog" element={<BlogList />} />
+              <Route path="/blog/:id" element={<BlogPostPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Register />} />
               

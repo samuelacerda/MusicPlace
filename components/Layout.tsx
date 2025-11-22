@@ -227,9 +227,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <div>
             <h3 className="font-semibold mb-4" style={{ color: theme.footer.textColor }}>Categorias</h3>
             <ul className="space-y-2 text-sm opacity-80">
-              {activeCategories.slice(0, 5).map(cat => (
+              {activeCategories.slice(0, 4).map(cat => (
                 <li key={cat.id}><Link to={`/busca?cat=${cat.id}`} className="hover:opacity-100 hover:underline">{cat.name}</Link></li>
               ))}
+               <li><Link to={`/blog`} className="hover:opacity-100 hover:underline font-bold text-brand-500" style={{ color: theme.primaryColor }}>Blog & Notícias</Link></li>
             </ul>
           </div>
 

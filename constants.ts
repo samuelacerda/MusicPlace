@@ -1,5 +1,5 @@
 
-import { Category, Condition, DeliveryMethod, Product, ServiceListing, UserProfile, Notification, Banner, Brand, Plan, Coupon, ThemeConfig, ContentPage, SystemSettings, MarketingConfig } from './types';
+import { Category, Condition, DeliveryMethod, Product, ServiceListing, UserProfile, Notification, Banner, Brand, Plan, Coupon, ThemeConfig, ContentPage, SystemSettings, MarketingConfig, BlogPost } from './types';
 
 export const SEED_CATEGORIES: Category[] = [
   {
@@ -240,6 +240,42 @@ export const SEED_BRANDS: Brand[] = [
   { id: 'other', name: 'Outros', description: 'Outras marcas não listadas', active: true }
 ];
 
+export const SEED_BLOG: BlogPost[] = [
+  {
+    id: '1',
+    title: 'Como escolher sua primeira guitarra',
+    subtitle: 'Um guia completo para iniciantes que querem começar com o pé direito.',
+    content: '<p>Escolher a primeira guitarra é um momento mágico, mas pode ser confuso. Existem muitos modelos: <strong>Stratocaster</strong>, <strong>Les Paul</strong>, <strong>Telecaster</strong>...</p><p>O primeiro passo é definir seu estilo musical. Se você gosta de rock clássico, uma Les Paul pode ser ideal. Para funk e blues, a Stratocaster é imbatível.</p><p>Não se esqueça de verificar o conforto do braço e a qualidade das ferragens.</p>',
+    image: 'https://images.unsplash.com/photo-1550291652-6ea9114a47b1?q=80&w=1000&auto=format&fit=crop',
+    category: 'Dicas',
+    author: 'Equipe MusicPlace',
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
+    featured: true
+  },
+  {
+    id: '2',
+    title: 'Manutenção básica: Trocando cordas',
+    subtitle: 'Aprenda a trocar as cordas do seu violão ou guitarra em casa.',
+    content: '<p>Manter as cordas novas é essencial para um bom timbre. Cordas velhas perdem o brilho e a afinação.</p><p>Você vai precisar de: um alicate de corte, uma manivela (opcional) e, claro, o encordoamento novo.</p><p>Troque uma corda de cada vez para manter a tensão no braço do instrumento.</p>',
+    image: 'https://images.unsplash.com/photo-1516924962500-2b4b3b99ea02?q=80&w=1000&auto=format&fit=crop',
+    category: 'Tutoriais',
+    author: 'Roberto Luthier',
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
+    featured: false
+  },
+  {
+    id: '3',
+    title: 'Os melhores pedais de 2024',
+    subtitle: 'Confira nossa lista com os lançamentos mais quentes do ano.',
+    content: '<p>O mercado de pedais não para. Este ano vimos o lançamento de novas workstations da Boss e pedais boutique brasileiros ganhando o mundo.</p><p>Destaque para os novos delays com inteligência artificial e overdrives transparentes.</p>',
+    image: 'https://images.unsplash.com/photo-1519508234439-4f23643125c1?q=80&w=1000&auto=format&fit=crop',
+    category: 'Reviews',
+    author: 'Ana Keys',
+    createdAt: new Date().toISOString(),
+    featured: true
+  }
+];
+
 // MOCK DATA FOR DEVELOPMENT
 export const SEED_DATABASE = {
   users: [
@@ -419,6 +455,7 @@ export const SEED_DATABASE = {
   ] as Banner[],
   categories: SEED_CATEGORIES,
   brands: SEED_BRANDS,
+  blogPosts: SEED_BLOG,
   plans: [
     {
        id: 'plan-basic',

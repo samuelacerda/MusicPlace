@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ShoppingBag, LogOut, Music, AlertOctagon, Image, Layers, Tag, Ticket, CreditCard, Settings, Palette, FileText, Megaphone, ArrowLeftCircle } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingBag, LogOut, Music, AlertOctagon, Image, Layers, Tag, Ticket, CreditCard, Settings, Palette, FileText, Megaphone, ArrowLeftCircle, BookOpen } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -74,6 +74,16 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                <span>Anúncios</span>
             </Link>
 
+            <div className="text-xs font-bold text-gray-600 uppercase px-4 mb-2 mt-4">Conteúdo</div>
+            <Link to="/admin/blog" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/blog')}`}>
+               <BookOpen size={20} />
+               <span>Blog / Notícias</span>
+            </Link>
+            <Link to="/admin/content" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/content')}`}>
+               <FileText size={20} />
+               <span>Páginas Legais</span>
+            </Link>
+
             <div className="text-xs font-bold text-gray-600 uppercase px-4 mb-2 mt-4">Comercial</div>
             <Link to="/admin/plans" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/plans')}`}>
                <CreditCard size={20} />
@@ -99,10 +109,6 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             </Link>
 
             <div className="text-xs font-bold text-gray-600 uppercase px-4 mb-2 mt-4">Sistema</div>
-            <Link to="/admin/content" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/content')}`}>
-               <FileText size={20} />
-               <span>Páginas & Conteúdo</span>
-            </Link>
             <Link to="/admin/settings" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/settings')}`}>
                <Settings size={20} />
                <span>Configurações</span>

@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Product, UserProfile, ProductStatus, Notification, Message, Banner, Category, Brand, Plan, Coupon, SystemSettings, ThemeConfig, ContentPage, MarketingConfig, Log } from '../types';
+import { Product, UserProfile, ProductStatus, Notification, Message, Banner, Category, Brand, Plan, Coupon, SystemSettings, ThemeConfig, ContentPage, MarketingConfig, Log, BlogPost } from '../types';
 import { SEED_DATABASE } from '../constants';
 
 interface AppState {
@@ -17,6 +17,7 @@ interface AppState {
   brands: Brand[];
   plans: Plan[];
   coupons: Coupon[];
+  blogPosts: BlogPost[];
   
   // Config Tables
   systemSettings: SystemSettings;
@@ -80,6 +81,12 @@ interface AppState {
   addCoupon: (coupon: Coupon) => void;
   updateCoupon: (id: string, data: Partial<Coupon>) => void;
   deleteCoupon: (id: string) => void;
+
+  // Blog Actions
+  addBlogPost: (post: BlogPost) => void;
+  updateBlogPost: (id: string, data: Partial<BlogPost>) => void;
+  deleteBlogPost: (id: string) => void;
+  toggleBlogPostFeatured: (id: string) => void;
   
   // Expiration Logic
   checkExpirations: () => void;
@@ -105,6 +112,7 @@ export const useAppStore = create<AppState>()(
       brands: SEED_DATABASE.brands,
       plans: SEED_DATABASE.plans,
       coupons: SEED_DATABASE.coupons,
+      blogPosts: SEED_DATABASE.blogPosts,
       
       // Configs
       systemSettings: SEED_DATABASE.settings,
@@ -281,6 +289,16 @@ export const useAppStore = create<AppState>()(
         coupons: state.coupons.map(c => c.id === id ? { ...c, ...data } : c)
       })),
       deleteCoupon: (id) => set((state) => ({ coupons: state.coupons.filter(c => c.id !== id) })),
+      
+      // BLOG ACTIONS
+      addBlogPost: (post) => set((state) => ({ blogPosts: [post, ...state.blogPosts] })),
+      updateBlogPost: (id, data) => set((state) => ({
+        blogPosts: state.blogPosts.map(p => p.id === id ? { ...p, ...data } : p)
+      })),
+      deleteBlogPost: (id) => set((state) => ({ blogPosts: state.blogPosts.filter(p => p.id !== id) })),
+      toggleBlogPostFeatured: (id) => set((state) => ({
+        blogPosts: state.blogPosts.map(p => p.id === id ? { ...p, featured: !p.featured } : p)
+      })),
 
       checkExpirations: () => {
         const now = new Date();
@@ -331,7 +349,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     {
-      name: 'musicplace-db-v13', 
+      name: 'musicplace-db-v14', 
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ 
         users: state.users, 
@@ -345,6 +363,7 @@ export const useAppStore = create<AppState>()(
         brands: state.brands,
         plans: state.plans,
         coupons: state.coupons,
+        blogPosts: state.blogPosts,
         systemSettings: state.systemSettings,
         theme: state.theme,
         contentPages: state.contentPages,
@@ -357,6 +376,7 @@ export const useAppStore = create<AppState>()(
             if (!state.products?.length) state.products = SEED_DATABASE.products;
             if (!state.plans?.length) state.plans = SEED_DATABASE.plans;
             if (!state.coupons?.length) state.coupons = SEED_DATABASE.coupons;
+            if (!state.blogPosts?.length) state.blogPosts = SEED_DATABASE.blogPosts;
             if (!state.systemSettings) state.systemSettings = SEED_DATABASE.settings;
             if (!state.theme) state.theme = SEED_DATABASE.theme;
             if (!state.contentPages?.length) state.contentPages = SEED_DATABASE.content;

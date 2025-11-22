@@ -85,6 +85,19 @@ export interface ServiceListing {
   image: string;
 }
 
+// BLOG TYPES
+export interface BlogPost {
+  id: string;
+  title: string;
+  subtitle: string;
+  content: string; // HTML supported
+  image: string;
+  category: string;
+  author: string;
+  createdAt: string;
+  featured: boolean;
+}
+
 // Registration Types
 
 export type AccountType = 'individual' | 'professional' | 'store';

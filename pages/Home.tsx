@@ -1,18 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, ChevronLeft, Music } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Music, ArrowRight } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { ProductCard } from '../components/ProductCard';
+import { BlogCard } from '../components/BlogCard';
 
 export const Home: React.FC = () => {
-  const { banners, products, categories, systemSettings, theme } = useAppStore();
+  const { banners, products, categories, systemSettings, theme, blogPosts } = useAppStore();
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   // Safety check for arrays
   const safeBanners = banners || [];
   const safeCategories = categories || [];
   const safeProducts = products || [];
+  const safeBlogPosts = blogPosts || [];
 
   // Sort active banners by order
   const activeBanners = safeBanners
@@ -24,6 +26,10 @@ export const Home: React.FC = () => {
   // Filter out expired ads
   const featuredProducts = safeProducts.filter(p => p.status === 'active' && p.featured).slice(0, 4);
   const recentProducts = safeProducts.filter(p => p.status === 'active').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 8);
+
+  // Blog Posts Logic
+  const recentBlogPosts = [...safeBlogPosts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 3);
+  const featuredBlogPosts = safeBlogPosts.filter(p => p.featured).slice(0, 2);
 
   // Banner Rotation
   useEffect(() => {
@@ -199,6 +205,27 @@ export const Home: React.FC = () => {
           ))}
         </div>
       </section>
+
+      {/* BLOG SECTION */}
+      {recentBlogPosts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 bg-gray-50 py-12 rounded-3xl">
+           <div className="flex items-center justify-between mb-8">
+             <div className="flex items-center gap-3">
+                <div className="h-8 w-1 bg-brand-600 rounded-full" style={{ backgroundColor: theme.primaryColor }}></div>
+                <h2 className="text-2xl font-bold text-gray-900">Blog & Notícias</h2>
+             </div>
+             <Link to="/blog" className="text-brand-600 font-bold flex items-center gap-1 hover:underline" style={{ color: theme.primaryColor }}>
+                Ver todos <ArrowRight size={16} />
+             </Link>
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {recentBlogPosts.map(post => (
+                <BlogCard key={post.id} post={post} />
+              ))}
+           </div>
+        </section>
+      )}
     </div>
   );
 };
