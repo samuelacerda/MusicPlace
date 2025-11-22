@@ -10,7 +10,7 @@ export const BlogList: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
 
   // Extract categories
-  const uniqueCategories = Array.from(new Set(blogPosts.map((p) => p.category)));
+  const uniqueCategories = Array.from(new Set(blogPosts.map((p) => p.category))) as string[];
   const allCategories: string[] = ['Todas', ...uniqueCategories];
   
   const featuredPost = blogPosts.find(p => p.featured);

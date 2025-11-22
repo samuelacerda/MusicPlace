@@ -171,25 +171,6 @@ export const Home: React.FC = () => {
         </section>
       )}
 
-      {/* MIDDLE BANNER */}
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="bg-brand-900 rounded-2xl overflow-hidden relative px-6 py-12 md:p-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl">
-           <div className="relative z-10 max-w-lg">
-              <h2 className="text-3xl font-bold text-white mb-4">Quer vender seu equipamento?</h2>
-              <p className="text-brand-200 mb-8 text-lg">Anuncie grátis para milhares de músicos em todo o Brasil. Venda rápido e com segurança.</p>
-              <Link 
-                to="/anunciar" 
-                className="bg-white text-brand-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition shadow-xl inline-block"
-              >
-                Anunciar Agora
-              </Link>
-           </div>
-           <div className="relative z-10">
-              <div className="w-64 h-64 bg-brand-500/20 rounded-full blur-3xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-           </div>
-        </div>
-      </div>
-
       {/* RECENT PRODUCTS */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
@@ -229,3 +210,4 @@ export const Home: React.FC = () => {
     </div>
   );
 };
+    
