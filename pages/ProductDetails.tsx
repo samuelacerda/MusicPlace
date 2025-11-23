@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MapPin, Share2, Heart, MessageCircle, ShieldCheck, Truck, Star, CheckCircle, RefreshCcw, DollarSign, ArrowLeft, Calendar } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
@@ -8,11 +8,18 @@ import { DeliveryMethod } from '../types';
 export const ProductDetails: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, currentUser, toggleFavorite, favorites, theme } = useAppStore();
+  const { products, currentUser, toggleFavorite, favorites, theme, addToRecentlyViewed } = useAppStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const product = products.find(p => p.id === id);
   const isFav = product ? favorites.includes(product.id) : false;
+
+  // Register view in history
+  useEffect(() => {
+    if (product) {
+      addToRecentlyViewed(product.id);
+    }
+  }, [product, addToRecentlyViewed]);
 
   if (!product) {
     return (

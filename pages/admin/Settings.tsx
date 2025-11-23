@@ -1,57 +1,89 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Save, Globe, CreditCard, Shield, Server, RotateCcw } from 'lucide-react';
+import { Save, Globe, CreditCard, Shield, Server, RotateCcw, Mail, MessageSquare, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { EmailConfig, WhatsappConfig } from '../../types';
 
 export const AdminSettings: React.FC = () => {
-  const { systemSettings, updateSystemSettings, logs } = useAppStore();
-  const [activeTab, setActiveTab] = useState<'general' | 'payment' | 'system'>('general');
+  const { systemSettings, updateSystemSettings, logs, sendAdminEmail, users } = useAppStore();
+  const [activeTab, setActiveTab] = useState<'general' | 'communication' | 'payment' | 'system'>('general');
   const [formData, setFormData] = useState(systemSettings);
+
+  // Email Sending Tool State
+  const [emailTool, setEmailTool] = useState({
+      target: 'all', // all, buyers, sellers, specific
+      specificEmail: '',
+      subject: '',
+      message: ''
+  });
 
   const handleSave = () => {
     updateSystemSettings(formData);
     alert('Configurações salvas com sucesso!');
   };
 
+  const handleSendEmail = (e: React.FormEvent) => {
+      e.preventDefault();
+      let recipients: string[] = [];
+      
+      if (emailTool.target === 'all') recipients = users.map(u => u.email);
+      else if (emailTool.target === 'specific') recipients = [emailTool.specificEmail];
+      // Mock filters for buyers/sellers based on role/type
+      else if (emailTool.target === 'sellers') recipients = users.filter(u => u.accountType !== 'individual').map(u => u.email);
+
+      sendAdminEmail(recipients, emailTool.subject, emailTool.message);
+      alert(`E-mail enviado para ${recipients.length} destinatários.`);
+      setEmailTool({ ...emailTool, subject: '', message: '' });
+  };
+
+  const updateEmailConfig = (key: keyof EmailConfig, value: any) => {
+      setFormData({
+          ...formData,
+          emailConfig: { ...formData.emailConfig, [key]: value }
+      });
+  };
+
+  const updateWhatsappConfig = (key: keyof WhatsappConfig, value: any) => {
+      setFormData({
+          ...formData,
+          whatsappConfig: { ...formData.whatsappConfig, [key]: value }
+      });
+  };
+
   return (
-    <div className="max-w-5xl">
-       <div className="mb-8 flex justify-between items-center">
+    <div className="max-w-6xl pb-20">
+       <div className="mb-8 flex justify-between items-center sticky top-0 bg-gray-100 py-4 z-10 border-b border-gray-200">
          <div>
            <h1 className="text-2xl font-bold text-gray-900">Configurações do Sistema</h1>
-           <p className="text-gray-500">Ajustes globais, pagamentos e segurança.</p>
+           <p className="text-gray-500">Controle total sobre comunicações e integrações.</p>
          </div>
-         <button onClick={handleSave} className="bg-brand-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-700">
+         <button onClick={handleSave} className="bg-brand-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-700 shadow-md">
             <Save size={18} /> Salvar Alterações
          </button>
        </div>
 
        {/* Tabs */}
-       <div className="flex gap-4 mb-8 border-b border-gray-200">
-          <button 
-            onClick={() => setActiveTab('general')} 
-            className={`pb-4 px-4 font-bold flex items-center gap-2 border-b-2 transition ${activeTab === 'general' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
+       <div className="flex gap-4 mb-8 border-b border-gray-200 overflow-x-auto no-scrollbar">
+          <button onClick={() => setActiveTab('general')} className={`pb-4 px-4 font-bold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${activeTab === 'general' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
              <Globe size={18} /> Geral
           </button>
-          <button 
-            onClick={() => setActiveTab('payment')} 
-            className={`pb-4 px-4 font-bold flex items-center gap-2 border-b-2 transition ${activeTab === 'payment' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
+          <button onClick={() => setActiveTab('communication')} className={`pb-4 px-4 font-bold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${activeTab === 'communication' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+             <Mail size={18} /> E-mail & WhatsApp
+          </button>
+          <button onClick={() => setActiveTab('payment')} className={`pb-4 px-4 font-bold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${activeTab === 'payment' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
              <CreditCard size={18} /> Pagamentos
           </button>
-          <button 
-            onClick={() => setActiveTab('system')} 
-            className={`pb-4 px-4 font-bold flex items-center gap-2 border-b-2 transition ${activeTab === 'system' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-             <Server size={18} /> Sistema & Logs
+          <button onClick={() => setActiveTab('system')} className={`pb-4 px-4 font-bold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${activeTab === 'system' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+             <Server size={18} /> Sistema
           </button>
        </div>
 
        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-          {/* General Tab */}
+          
+          {/* 1. GENERAL TAB */}
           {activeTab === 'general' && (
              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Identidade do Site</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Identidade Visual</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Site</label>
@@ -90,7 +122,152 @@ export const AdminSettings: React.FC = () => {
              </div>
           )}
 
-          {/* Payment Tab */}
+          {/* 2. COMMUNICATION TAB (EMAIL & WHATSAPP) */}
+          {activeTab === 'communication' && (
+             <div className="space-y-12">
+                
+                {/* SMTP Config */}
+                <section>
+                    <div className="flex items-center gap-2 mb-6">
+                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg"><Mail size={20} /></div>
+                        <h3 className="text-xl font-bold text-gray-900">Configurações de E-mail (SMTP)</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">E-mail de Suporte (Recebe Tickets)</label>
+                            <input type="email" value={formData.emailConfig.supportEmail} onChange={e => updateEmailConfig('supportEmail', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">E-mail de Contato Geral</label>
+                            <input type="email" value={formData.emailConfig.contactEmail} onChange={e => updateEmailConfig('contactEmail', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nome do Remetente Padrão</label>
+                            <input type="text" value={formData.emailConfig.senderName} onChange={e => updateEmailConfig('senderName', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                        </div>
+                         <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Reply-To (Responder Para)</label>
+                            <input type="email" value={formData.emailConfig.replyTo} onChange={e => updateEmailConfig('replyTo', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                        </div>
+
+                        <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2">
+                             <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2"><Server size={16}/> Servidor SMTP (Gmail Workspace / Outros)</h4>
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Host SMTP</label>
+                                    <input type="text" value={formData.emailConfig.smtpHost} onChange={e => updateEmailConfig('smtpHost', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" placeholder="smtp.gmail.com" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Porta</label>
+                                    <input type="number" value={formData.emailConfig.smtpPort} onChange={e => updateEmailConfig('smtpPort', parseInt(e.target.value))} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" placeholder="465" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Criptografia</label>
+                                    <select value={formData.emailConfig.encryption} onChange={e => updateEmailConfig('encryption', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900">
+                                        <option value="ssl">SSL</option>
+                                        <option value="tls">TLS</option>
+                                        <option value="none">Nenhuma</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Usuário SMTP</label>
+                                    <input type="text" value={formData.emailConfig.smtpUser} onChange={e => updateEmailConfig('smtpUser', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Senha (App Password)</label>
+                                    <input type="password" value={formData.emailConfig.smtpPass} onChange={e => updateEmailConfig('smtpPass', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" placeholder="••••••••" />
+                                    <p className="text-[10px] text-gray-500 mt-1">Recomendado usar Senha de App se utilizar Google Workspace.</p>
+                                </div>
+                             </div>
+                        </div>
+                        
+                        <div className="md:col-span-2">
+                            <button className="text-brand-600 text-sm font-bold flex items-center gap-1 hover:underline">
+                                <CheckCircle size={14} /> Testar Conexão SMTP
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                {/* WhatsApp Config */}
+                <section className="border-t border-gray-200 pt-8">
+                    <div className="flex items-center gap-2 mb-6">
+                        <div className="p-2 bg-green-100 text-green-600 rounded-lg"><MessageSquare size={20} /></div>
+                        <h3 className="text-xl font-bold text-gray-900">WhatsApp & Atendimento</h3>
+                    </div>
+
+                     <div className="bg-green-50 p-6 rounded-xl border border-green-200 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h4 className="font-bold text-green-900">Botão Flutuante e Integração</h4>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked={formData.whatsappConfig.enabled} onChange={(e) => updateWhatsappConfig('enabled', e.target.checked)} className="sr-only peer" />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                            </label>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Número Oficial (Atendimento Humano)</label>
+                                <input type="text" value={formData.whatsappConfig.humanAgentNumber} onChange={e => updateWhatsappConfig('humanAgentNumber', e.target.value)} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" placeholder="5511999999999" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID do Robô / API Token</label>
+                                <input type="text" value={formData.whatsappConfig.botId} onChange={e => updateWhatsappConfig('botId', e.target.value)} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" />
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Mensagem de Boas-vindas (Automática)</label>
+                                <input type="text" value={formData.whatsappConfig.welcomeMessage} onChange={e => updateWhatsappConfig('welcomeMessage', e.target.value)} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Tempo de Espera p/ Humano (min)</label>
+                                <input type="number" value={formData.whatsappConfig.humanTimeoutMinutes} onChange={e => updateWhatsappConfig('humanTimeoutMinutes', parseInt(e.target.value))} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" />
+                            </div>
+                        </div>
+                     </div>
+                </section>
+
+                {/* Email Sending Tool */}
+                <section className="border-t border-gray-200 pt-8">
+                     <div className="flex items-center gap-2 mb-6">
+                        <div className="p-2 bg-yellow-100 text-yellow-600 rounded-lg"><Send size={20} /></div>
+                        <h3 className="text-xl font-bold text-gray-900">Ferramenta de Envio de E-mail</h3>
+                    </div>
+                    
+                    <form onSubmit={handleSendEmail} className="bg-white p-6 rounded-xl border border-gray-300 shadow-sm space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Destinatário(s)</label>
+                                <select value={emailTool.target} onChange={e => setEmailTool({...emailTool, target: e.target.value})} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900">
+                                    <option value="all">Todos os Usuários</option>
+                                    <option value="specific">E-mail Específico</option>
+                                    <option value="sellers">Vendedores / Lojistas</option>
+                                </select>
+                            </div>
+                             {emailTool.target === 'specific' && (
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">E-mail do Usuário</label>
+                                    <input type="email" required value={emailTool.specificEmail} onChange={e => setEmailTool({...emailTool, specificEmail: e.target.value})} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                                </div>
+                             )}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Assunto</label>
+                            <input type="text" required value={emailTool.subject} onChange={e => setEmailTool({...emailTool, subject: e.target.value})} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                        </div>
+                         <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Mensagem (HTML)</label>
+                            <textarea required value={emailTool.message} onChange={e => setEmailTool({...emailTool, message: e.target.value})} className="w-full p-2 border border-gray-300 rounded h-32 font-mono text-sm bg-white text-gray-900" />
+                        </div>
+                        <button type="submit" className="bg-gray-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-black transition flex items-center gap-2">
+                            <Send size={16} /> Enviar Disparo
+                        </button>
+                    </form>
+                </section>
+             </div>
+          )}
+
+          {/* 3. PAYMENT TAB */}
           {activeTab === 'payment' && (
              <div className="space-y-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Gateway de Pagamento</h3>
@@ -139,7 +316,7 @@ export const AdminSettings: React.FC = () => {
              </div>
           )}
 
-          {/* System Tab */}
+          {/* 4. SYSTEM TAB */}
           {activeTab === 'system' && (
              <div className="space-y-8">
                 <div>
@@ -153,6 +330,12 @@ export const AdminSettings: React.FC = () => {
                          <label className="block text-sm font-medium text-gray-700 mb-1">IPs Permitidos (Admin)</label>
                          <input type="text" placeholder="Separar por vírgula" className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900" />
                       </div>
+                   </div>
+                   <div className="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-100 flex items-start gap-2">
+                      <AlertCircle size={16} className="text-yellow-600 mt-0.5" />
+                      <p className="text-sm text-yellow-800">
+                          <strong>Nota de Segurança:</strong> As senhas de SMTP são armazenadas com criptografia simulada no banco de dados local. Em produção, utilize variáveis de ambiente.
+                      </p>
                    </div>
                 </div>
 

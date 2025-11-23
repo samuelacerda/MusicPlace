@@ -1,7 +1,8 @@
 
+
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Ban, CheckCircle, Search, Plus, X, User, Briefcase, Store } from 'lucide-react';
+import { Ban, CheckCircle, Search, Plus, X, User, Briefcase, Store, Edit2 } from 'lucide-react';
 import { UserProfile, AccountType, ProfessionalArea, ProfessionalType } from '../../types';
 import { STATES } from '../../constants';
 
@@ -20,8 +21,10 @@ const AREA_LABELS: Record<ProfessionalArea, string> = {
 };
 
 export const AdminUsers: React.FC = () => {
-  const { users, banUser, unbanUser, adminCreateUser } = useAppStore();
+  const { users, banUser, unbanUser, adminCreateUser, updateProfile } = useAppStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   // New User Form State
@@ -47,44 +50,108 @@ export const AdminUsers: React.FC = () => {
     address: ''
   };
 
-  const [newUser, setNewUser] = useState(initialFormState);
+  const [formData, setFormData] = useState(initialFormState);
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const openCreateModal = () => {
+      setFormData(initialFormState);
+      setIsEditing(false);
+      setEditingUserId(null);
+      setIsModalOpen(true);
+  }
+
+  const openEditModal = (user: UserProfile) => {
+      setFormData({
+          ...initialFormState,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          accountType: user.accountType,
+          state: user.state,
+          city: user.city,
+          cpf: user.cpf || '',
+          birthDate: user.birthDate || '',
+          cnpj: user.cnpj || '',
+          legalName: user.legalName || '',
+          tradeName: user.tradeName || '',
+          bio: user.bio || '',
+          website: user.website || '',
+          profArea: user.professionalArea || 'Musician',
+          profType: user.cnpj ? 'business' : 'individual',
+          // Passwords are not pre-filled for security
+          password: '',
+          confirmPassword: ''
+      });
+      setIsEditing(true);
+      setEditingUserId(user.id);
+      setIsModalOpen(true);
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (newUser.password !== newUser.confirmPassword) {
+    if (formData.password && formData.password !== formData.confirmPassword) {
         alert("As senhas não coincidem.");
         return;
     }
 
-    const user: UserProfile = {
-       id: Date.now().toString(),
-       name: newUser.name,
-       email: newUser.email,
-       phone: newUser.phone,
-       role: newUser.role,
-       accountType: newUser.accountType,
-       state: newUser.state,
-       city: newUser.city,
-       createdAt: new Date().toISOString(),
-       isBanned: false,
-       // Optional Fields based on type
-       cpf: newUser.cpf,
-       birthDate: newUser.birthDate,
-       cnpj: newUser.cnpj,
-       legalName: newUser.legalName,
-       tradeName: newUser.tradeName,
-       professionalArea: newUser.accountType === 'professional' ? newUser.profArea : undefined,
-       bio: newUser.bio,
-       website: newUser.website,
-       // Admin created users might get a default plan or handle via update
-       plan: newUser.accountType === 'store' ? 'plan-store' : newUser.accountType === 'professional' ? 'plan-pro' : undefined
-    };
+    if (isEditing && editingUserId) {
+        // UPDATE MODE
+        const updates: Partial<UserProfile> = {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            role: formData.role,
+            accountType: formData.accountType,
+            state: formData.state,
+            city: formData.city,
+            cpf: formData.cpf,
+            birthDate: formData.birthDate,
+            cnpj: formData.cnpj,
+            legalName: formData.legalName,
+            tradeName: formData.tradeName,
+            professionalArea: formData.accountType === 'professional' ? formData.profArea : undefined,
+            bio: formData.bio,
+            website: formData.website,
+        };
+        // Only update plan if changing account type
+        if (formData.accountType === 'store') updates.plan = 'plan-store';
+        
+        // Note: Password update logic would normally be handled securely here. 
+        // Since updateProfile is generic, we assume it handles what's passed.
+        // In a real app, password should be hashed on backend.
+        
+        updateProfile(editingUserId, updates);
+        alert('Usuário atualizado com sucesso!');
 
-    adminCreateUser(user);
+    } else {
+        // CREATE MODE
+        const user: UserProfile = {
+            id: Date.now().toString(),
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            role: formData.role,
+            accountType: formData.accountType,
+            state: formData.state,
+            city: formData.city,
+            createdAt: new Date().toISOString(),
+            isBanned: false,
+            cpf: formData.cpf,
+            birthDate: formData.birthDate,
+            cnpj: formData.cnpj,
+            legalName: formData.legalName,
+            tradeName: formData.tradeName,
+            professionalArea: formData.accountType === 'professional' ? formData.profArea : undefined,
+            bio: formData.bio,
+            website: formData.website,
+            plan: formData.accountType === 'store' ? 'plan-store' : formData.accountType === 'professional' ? 'plan-pro' : undefined
+        };
+        adminCreateUser(user);
+        alert('Usuário criado com sucesso!');
+    }
+
     setIsModalOpen(false);
-    setNewUser(initialFormState);
-    alert('Usuário criado com sucesso!');
   };
 
   const filteredUsers = users.filter(u => 
@@ -97,47 +164,47 @@ export const AdminUsers: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Usuários</h1>
          <button 
-           onClick={() => setIsModalOpen(true)}
+           onClick={openCreateModal}
            className="bg-brand-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-700 shadow-sm"
          >
            <Plus size={18} /> Novo Usuário
          </button>
       </div>
 
-      {/* Create User Modal */}
+      {/* Modal (Create / Edit) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden my-8 flex flex-col max-h-[90vh]">
               <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
-                 <h3 className="font-bold text-xl text-gray-900">Cadastrar Novo Usuário</h3>
+                 <h3 className="font-bold text-xl text-gray-900">{isEditing ? 'Editar Usuário' : 'Cadastrar Novo Usuário'}</h3>
                  <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X /></button>
               </div>
               
               <div className="overflow-y-auto p-6">
-                <form onSubmit={handleCreateUser} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     
                     {/* Account Type Selector */}
                     <div className="grid grid-cols-3 gap-4">
                         <button 
                             type="button"
-                            onClick={() => setNewUser({...newUser, accountType: 'individual'})}
-                            className={`p-3 rounded-lg border-2 text-center transition flex flex-col items-center gap-2 ${newUser.accountType === 'individual' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-gray-200 text-gray-600'}`}
+                            onClick={() => setFormData({...formData, accountType: 'individual'})}
+                            className={`p-3 rounded-lg border-2 text-center transition flex flex-col items-center gap-2 ${formData.accountType === 'individual' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-gray-200 text-gray-600'}`}
                         >
                             <User size={20} />
                             <span className="text-xs font-bold">Pessoa Física</span>
                         </button>
                         <button 
                             type="button"
-                            onClick={() => setNewUser({...newUser, accountType: 'professional'})}
-                            className={`p-3 rounded-lg border-2 text-center transition flex flex-col items-center gap-2 ${newUser.accountType === 'professional' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'}`}
+                            onClick={() => setFormData({...formData, accountType: 'professional'})}
+                            className={`p-3 rounded-lg border-2 text-center transition flex flex-col items-center gap-2 ${formData.accountType === 'professional' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'}`}
                         >
                             <Briefcase size={20} />
                             <span className="text-xs font-bold">Profissional</span>
                         </button>
                         <button 
                             type="button"
-                            onClick={() => setNewUser({...newUser, accountType: 'store'})}
-                            className={`p-3 rounded-lg border-2 text-center transition flex flex-col items-center gap-2 ${newUser.accountType === 'store' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600'}`}
+                            onClick={() => setFormData({...formData, accountType: 'store'})}
+                            className={`p-3 rounded-lg border-2 text-center transition flex flex-col items-center gap-2 ${formData.accountType === 'store' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600'}`}
                         >
                             <Store size={20} />
                             <span className="text-xs font-bold">Loja</span>
@@ -147,27 +214,34 @@ export const AdminUsers: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
-                            <input type="text" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} />
+                            <input type="text" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Email</label>
-                            <input type="email" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
+                            <input type="email" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Telefone / WhatsApp</label>
-                            <input type="text" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.phone} onChange={e => setNewUser({...newUser, phone: e.target.value})} />
+                            <input type="text" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Senha</label>
-                            <input type="password" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} />
+                        
+                        <div className="col-span-2 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                           <p className="text-xs text-yellow-800 mb-2 font-bold">{isEditing ? 'Alterar Senha (Opcional - deixe em branco para manter a atual)' : 'Definir Senha'}</p>
+                           <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Senha</label>
+                                    <input type="password" required={!isEditing} className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Confirmar Senha</label>
+                                    <input type="password" required={!isEditing} className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.confirmPassword} onChange={e => setFormData({...formData, confirmPassword: e.target.value})} />
+                                </div>
+                           </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Confirmar Senha</label>
-                            <input type="password" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.confirmPassword} onChange={e => setNewUser({...newUser, confirmPassword: e.target.value})} />
-                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Permissão do Sistema</label>
-                            <select className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value as any})}>
+                            <select className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as any})}>
                                 <option value="user">Usuário Padrão</option>
                                 <option value="admin">Administrador</option>
                             </select>
@@ -175,73 +249,73 @@ export const AdminUsers: React.FC = () => {
                     </div>
 
                     {/* Conditional Fields - Individual */}
-                    {newUser.accountType === 'individual' && (
+                    {formData.accountType === 'individual' && (
                         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">CPF</label>
-                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.cpf} onChange={e => setNewUser({...newUser, cpf: e.target.value})} />
+                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.cpf} onChange={e => setFormData({...formData, cpf: e.target.value})} />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Data Nascimento</label>
-                                <input type="date" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.birthDate} onChange={e => setNewUser({...newUser, birthDate: e.target.value})} />
+                                <input type="date" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} />
                             </div>
                         </div>
                     )}
 
                     {/* Conditional Fields - Professional */}
-                    {newUser.accountType === 'professional' && (
+                    {formData.accountType === 'professional' && (
                         <div className="pt-4 border-t border-gray-100 space-y-4">
                             <div className="flex gap-4">
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" checked={newUser.profType === 'individual'} onChange={() => setNewUser({...newUser, profType: 'individual'})} />
+                                    <input type="radio" checked={formData.profType === 'individual'} onChange={() => setFormData({...formData, profType: 'individual'})} />
                                     <span className="text-sm">Autônomo (CPF)</span>
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="radio" checked={newUser.profType === 'business'} onChange={() => setNewUser({...newUser, profType: 'business'})} />
+                                    <input type="radio" checked={formData.profType === 'business'} onChange={() => setFormData({...formData, profType: 'business'})} />
                                     <span className="text-sm">Empresa (CNPJ)</span>
                                 </label>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">{newUser.profType === 'individual' ? 'CPF' : 'CNPJ'}</label>
-                                    <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.profType === 'individual' ? newUser.cpf : newUser.cnpj} onChange={e => setNewUser(newUser.profType === 'individual' ? {...newUser, cpf: e.target.value} : {...newUser, cnpj: e.target.value})} />
+                                    <label className="block text-sm font-medium text-gray-700">{formData.profType === 'individual' ? 'CPF' : 'CNPJ'}</label>
+                                    <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.profType === 'individual' ? formData.cpf : formData.cnpj} onChange={e => setFormData(formData.profType === 'individual' ? {...formData, cpf: e.target.value} : {...formData, cnpj: e.target.value})} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Área de Atuação</label>
-                                    <select className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.profArea} onChange={e => setNewUser({...newUser, profArea: e.target.value as ProfessionalArea})}>
+                                    <select className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.profArea} onChange={e => setFormData({...formData, profArea: e.target.value as ProfessionalArea})}>
                                         {PROFESSIONAL_AREAS.map(a => <option key={a} value={a}>{AREA_LABELS[a]}</option>)}
                                     </select>
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Bio / Descrição</label>
-                                <textarea className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900 h-20" value={newUser.bio} onChange={e => setNewUser({...newUser, bio: e.target.value})}></textarea>
+                                <textarea className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900 h-20" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})}></textarea>
                             </div>
                         </div>
                     )}
 
                     {/* Conditional Fields - Store */}
-                    {(newUser.accountType === 'store' || (newUser.accountType === 'professional' && newUser.profType === 'business')) && (
+                    {(formData.accountType === 'store' || (formData.accountType === 'professional' && formData.profType === 'business')) && (
                         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Razão Social</label>
-                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.legalName} onChange={e => setNewUser({...newUser, legalName: e.target.value})} />
+                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.legalName} onChange={e => setFormData({...formData, legalName: e.target.value})} />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Nome Fantasia</label>
-                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.tradeName} onChange={e => setNewUser({...newUser, tradeName: e.target.value})} />
+                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.tradeName} onChange={e => setFormData({...formData, tradeName: e.target.value})} />
                             </div>
                              <div>
                                 <label className="block text-sm font-medium text-gray-700">CNPJ</label>
-                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.cnpj} onChange={e => setNewUser({...newUser, cnpj: e.target.value})} />
+                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.cnpj} onChange={e => setFormData({...formData, cnpj: e.target.value})} />
                             </div>
                              <div>
                                 <label className="block text-sm font-medium text-gray-700">Website</label>
-                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.website} onChange={e => setNewUser({...newUser, website: e.target.value})} />
+                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                             </div>
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium text-gray-700">Endereço</label>
-                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.address} onChange={e => setNewUser({...newUser, address: e.target.value})} />
+                                <input type="text" className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
                             </div>
                         </div>
                     )}
@@ -250,19 +324,19 @@ export const AdminUsers: React.FC = () => {
                     <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">UF</label>
-                            <select className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.state} onChange={e => setNewUser({...newUser, state: e.target.value})}>
+                            <select className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})}>
                                 <option value="">Selecione</option>
                                 {STATES.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
                         <div className="col-span-2">
                             <label className="block text-sm font-medium text-gray-700">Cidade</label>
-                            <input type="text" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={newUser.city} onChange={e => setNewUser({...newUser, city: e.target.value})} />
+                            <input type="text" required className="w-full p-2 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
                         </div>
                     </div>
 
                     <button type="submit" className="w-full bg-brand-600 text-white font-bold py-3 rounded-lg hover:bg-brand-700 mt-4">
-                        Criar Conta
+                        {isEditing ? 'Atualizar Dados' : 'Criar Conta'}
                     </button>
                 </form>
               </div>
@@ -315,15 +389,22 @@ export const AdminUsers: React.FC = () => {
                      <span className="text-green-600 font-bold flex items-center gap-1"><CheckCircle size={14}/> Ativo</span>
                    )}
                 </td>
-                <td className="p-4 text-right">
-                  {user.role !== 'admin' && (
+                <td className="p-4 text-right flex justify-end gap-2">
                     <button 
-                      onClick={() => user.isBanned ? unbanUser(user.id) : banUser(user.id)}
-                      className={`text-xs font-bold px-3 py-1.5 rounded-md transition ${user.isBanned ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                        onClick={() => openEditModal(user)} 
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                        title="Editar Dados"
                     >
-                      {user.isBanned ? 'Reativar' : 'Banir'}
+                        <Edit2 size={16} />
                     </button>
-                  )}
+                    {user.role !== 'admin' && (
+                        <button 
+                        onClick={() => user.isBanned ? unbanUser(user.id) : banUser(user.id)}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-md transition ${user.isBanned ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                        >
+                        {user.isBanned ? 'Reativar' : 'Banir'}
+                        </button>
+                    )}
                 </td>
               </tr>
             ))}

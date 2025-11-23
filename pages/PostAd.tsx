@@ -93,7 +93,7 @@ export const PostAd: React.FC = () => {
             setPreviewImages(prev => [...prev, reader.result as string]);
           }
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file as Blob);
       });
     }
   };
@@ -198,7 +198,7 @@ export const PostAd: React.FC = () => {
              </select>
 
              {formData.brand === 'Outros' && (
-                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2 animate-fadeIn">
+                 <div className="bg-white p-4 rounded-lg border border-gray-200 mt-2 animate-fadeIn">
                      <label className="block text-xs font-bold text-gray-700 mb-1">Nome da Marca (Personalizado)</label>
                      <input 
                         type="text" 
@@ -379,12 +379,12 @@ export const PostAd: React.FC = () => {
                 required
               />
              </div>
-             {/* Negotiation Toggles */}
-             <div className="flex gap-6 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+             {/* Negotiation Toggles - White background */}
+             <div className="flex gap-6 mt-4 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                  <input 
                   type="checkbox" 
-                  className="rounded text-brand-600 focus:ring-brand-500 bg-white h-5 w-5"
+                  className="rounded text-brand-600 focus:ring-brand-500 bg-white h-5 w-5 border-gray-300"
                   checked={formData.acceptsNegotiation}
                   onChange={(e) => setFormData({...formData, acceptsNegotiation: e.target.checked})}
                  />
@@ -393,7 +393,7 @@ export const PostAd: React.FC = () => {
                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                  <input 
                   type="checkbox" 
-                  className="rounded text-brand-600 focus:ring-brand-500 bg-white h-5 w-5"
+                  className="rounded text-brand-600 focus:ring-brand-500 bg-white h-5 w-5 border-gray-300"
                   checked={formData.acceptsTrade}
                   onChange={(e) => setFormData({...formData, acceptsTrade: e.target.checked})}
                  />
@@ -429,8 +429,8 @@ export const PostAd: React.FC = () => {
              </div>
           </div>
 
-          {/* UNIFIED CONTACT FIELDS (READ ONLY) */}
-          <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mt-8">
+          {/* UNIFIED CONTACT FIELDS (READ ONLY) - CHANGED TO WHITE */}
+          <div className="bg-white p-6 rounded-xl border border-blue-200 mt-8">
              <div className="flex items-start gap-3 mb-4">
                <AlertTriangle className="text-blue-600 shrink-0 mt-1" size={20} />
                <div>
@@ -445,14 +445,14 @@ export const PostAd: React.FC = () => {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="relative">
                  <label className="block text-xs font-bold text-blue-800 uppercase mb-1">Vendedor</label>
-                 <div className="flex items-center w-full border border-blue-200 bg-white/50 rounded-lg p-3 text-gray-600 cursor-not-allowed">
+                 <div className="flex items-center w-full border border-blue-200 bg-white rounded-lg p-3 text-gray-600 cursor-not-allowed">
                     <User size={18} className="mr-2 text-blue-400" />
                     {currentUser.name}
                  </div>
                </div>
                <div className="relative">
                  <label className="block text-xs font-bold text-blue-800 uppercase mb-1">WhatsApp</label>
-                 <div className="flex items-center w-full border border-blue-200 bg-white/50 rounded-lg p-3 text-gray-600 cursor-not-allowed">
+                 <div className="flex items-center w-full border border-blue-200 bg-white rounded-lg p-3 text-gray-600 cursor-not-allowed">
                     <Phone size={18} className="mr-2 text-blue-400" />
                     {currentUser.phone}
                  </div>

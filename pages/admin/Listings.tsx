@@ -80,7 +80,7 @@ export const AdminListings: React.FC = () => {
             setPreviewImages(prev => [...prev, reader.result as string]);
           }
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file as Blob);
       });
     }
   };

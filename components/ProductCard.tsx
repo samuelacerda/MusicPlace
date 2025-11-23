@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Truck, RefreshCcw } from 'lucide-react';
+import { Heart, MapPin, Truck, RefreshCcw, MessageCircle } from 'lucide-react';
 import { Product, DeliveryMethod } from '../types';
 import { useAppStore } from '../store/useAppStore';
 
@@ -12,6 +12,13 @@ interface Props {
 export const ProductCard: React.FC<Props> = ({ product }) => {
   const { favorites, toggleFavorite, theme } = useAppStore();
   const isFav = favorites.includes(product.id);
+
+  const handleWhatsappClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const message = `Olá! Vi seu anúncio "${product.title}" no MusicPlace e gostaria de saber mais.`;
+    const url = `https://wa.me/55${product.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
 
   return (
     <div 
@@ -34,8 +41,18 @@ export const ProductCard: React.FC<Props> = ({ product }) => {
               <RefreshCcw size={10} /> Trocas
             </span>
           )}
+          
+          {/* WhatsApp Button (Floating) */}
+          <button 
+            onClick={handleWhatsappClick}
+            className="absolute bottom-2 right-2 bg-green-600 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform z-20 hover:bg-green-700"
+            title="Conversar no WhatsApp"
+          >
+             <MessageCircle size={18} />
+          </button>
+
           {product.delivery !== DeliveryMethod.RETIRADA && (
-            <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur-sm p-1.5 rounded-full text-white shadow-sm" title="Envia para todo Brasil">
+            <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm p-1.5 rounded-full text-white shadow-sm" title="Envia para todo Brasil">
                <Truck size={14} />
             </div>
           )}

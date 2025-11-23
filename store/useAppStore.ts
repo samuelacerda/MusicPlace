@@ -1,7 +1,8 @@
 
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Product, UserProfile, ProductStatus, Notification, Message, Banner, Category, Brand, Plan, Coupon, SystemSettings, ThemeConfig, ContentPage, MarketingConfig, Log, BlogPost } from '../types';
+import { Product, UserProfile, ProductStatus, Notification, Message, Banner, Category, Brand, Plan, Coupon, SystemSettings, ThemeConfig, ContentPage, MarketingConfig, Log, BlogPost, Ticket } from '../types';
 import { SEED_DATABASE } from '../constants';
 
 interface AppState {
@@ -18,6 +19,8 @@ interface AppState {
   plans: Plan[];
   coupons: Coupon[];
   blogPosts: BlogPost[];
+  recentlyViewed: string[]; // Array of product IDs
+  tickets: Ticket[];
   
   // Config Tables
   systemSettings: SystemSettings;
@@ -45,6 +48,7 @@ interface AppState {
   deleteProduct: (id: string) => void;
   markAsSold: (id: string) => void;
   toggleFavorite: (id: string) => void;
+  addToRecentlyViewed: (id: string) => void;
   
   // Admin Actions
   approveProduct: (id: string) => void;
@@ -88,6 +92,10 @@ interface AppState {
   deleteBlogPost: (id: string) => void;
   toggleBlogPostFeatured: (id: string) => void;
   
+  // Support Actions
+  addTicket: (ticket: Ticket) => void;
+  sendAdminEmail: (to: string[], subject: string, body: string) => void;
+
   // Expiration Logic
   checkExpirations: () => void;
   renewProduct: (id: string) => void;
@@ -113,6 +121,8 @@ export const useAppStore = create<AppState>()(
       plans: SEED_DATABASE.plans,
       coupons: SEED_DATABASE.coupons,
       blogPosts: SEED_DATABASE.blogPosts,
+      recentlyViewed: [],
+      tickets: [],
       
       // Configs
       systemSettings: SEED_DATABASE.settings,
@@ -216,6 +226,14 @@ export const useAppStore = create<AppState>()(
         };
       }),
 
+      addToRecentlyViewed: (id) => set((state) => {
+        // Remove duplicate if exists and add to front
+        const filtered = state.recentlyViewed.filter(item => item !== id);
+        // Limit to 10 items
+        const newList = [id, ...filtered].slice(0, 10);
+        return { recentlyViewed: newList };
+      }),
+
       approveProduct: (id) => {
         set((state) => ({
           products: state.products.map(p => p.id === id ? { ...p, status: 'active' } : p)
@@ -299,6 +317,18 @@ export const useAppStore = create<AppState>()(
       toggleBlogPostFeatured: (id) => set((state) => ({
         blogPosts: state.blogPosts.map(p => p.id === id ? { ...p, featured: !p.featured } : p)
       })),
+      
+      // SUPPORT TICKET ACTIONS
+      addTicket: (ticket) => {
+        set((state) => ({ tickets: [ticket, ...state.tickets] }));
+        get().addLog('NEW_TICKET', `New support ticket created: ${ticket.id}`);
+      },
+
+      sendAdminEmail: (to, subject, body) => {
+        // Simulates sending an email by adding to log
+        // In a real app, this would call a backend API
+        get().addLog('EMAIL_SENT', `Email sent to ${to.length} recipients. Subject: ${subject}`);
+      },
 
       checkExpirations: () => {
         const now = new Date();
@@ -349,7 +379,7 @@ export const useAppStore = create<AppState>()(
       }
     }),
     {
-      name: 'musicplace-db-v14', 
+      name: 'musicplace-db-v16', 
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ 
         users: state.users, 
@@ -364,6 +394,8 @@ export const useAppStore = create<AppState>()(
         plans: state.plans,
         coupons: state.coupons,
         blogPosts: state.blogPosts,
+        recentlyViewed: state.recentlyViewed,
+        tickets: state.tickets,
         systemSettings: state.systemSettings,
         theme: state.theme,
         contentPages: state.contentPages,
@@ -378,9 +410,14 @@ export const useAppStore = create<AppState>()(
             if (!state.coupons?.length) state.coupons = SEED_DATABASE.coupons;
             if (!state.blogPosts?.length) state.blogPosts = SEED_DATABASE.blogPosts;
             if (!state.systemSettings) state.systemSettings = SEED_DATABASE.settings;
+            // Ensure new nested objects exist if loading from old local storage
+            if (!state.systemSettings.emailConfig) state.systemSettings.emailConfig = SEED_DATABASE.settings.emailConfig;
+            if (!state.systemSettings.whatsappConfig) state.systemSettings.whatsappConfig = SEED_DATABASE.settings.whatsappConfig;
+            
             if (!state.theme) state.theme = SEED_DATABASE.theme;
             if (!state.contentPages?.length) state.contentPages = SEED_DATABASE.content;
             if (!state.marketing) state.marketing = SEED_DATABASE.marketing;
+            if (!state.tickets) state.tickets = [];
         }
       }
     }

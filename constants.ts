@@ -1,4 +1,5 @@
 
+
 import { Category, Condition, DeliveryMethod, Product, ServiceListing, UserProfile, Notification, Banner, Brand, Plan, Coupon, ThemeConfig, ContentPage, SystemSettings, MarketingConfig, BlogPost } from './types';
 
 export const SEED_CATEGORIES: Category[] = [
@@ -404,7 +405,57 @@ export const SEED_DATABASE = {
       acceptsNegotiation: true,
       acceptsTrade: false,
       expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    } as Product
+    } as Product,
+    {
+        id: 'p4',
+        userId: 'u3',
+        title: 'Bateria Pearl Export EXX Completa',
+        price: 5200,
+        images: ['https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?q=80&w=800&auto=format&fit=crop'],
+        category: 'Bateria e Percussão',
+        subcategory: 'Baterias Acústicas',
+        condition: Condition.SEMINOVO,
+        locationState: 'SP',
+        locationCity: 'São Paulo',
+        description: 'Bateria Pearl Export EXX na cor Jet Black. Kit completo com ferragens e pratos Zildjian Planet Z.',
+        delivery: DeliveryMethod.RETIRADA,
+        sellerName: 'Music Shop Pro',
+        sellerRating: 5.0,
+        createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+        status: 'active',
+        featured: true,
+        whatsapp: '(11) 3333-3333',
+        brand: 'Pearl',
+        model: 'Export EXX',
+        acceptsNegotiation: true,
+        acceptsTrade: false,
+        expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    } as Product,
+    {
+        id: 'p5',
+        userId: 'u2',
+        title: 'Interface de Áudio Focusrite Scarlett 2i2 3rd Gen',
+        price: 1100,
+        images: ['https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop'],
+        category: 'Áudio Profissional',
+        subcategory: 'Interfaces de Áudio',
+        condition: Condition.USADO,
+        locationState: 'SP',
+        locationCity: 'Campinas',
+        description: 'Interface funcionando perfeitamente. Acompanha cabo USB original.',
+        delivery: DeliveryMethod.ENVIO,
+        sellerName: 'João da Silva',
+        sellerRating: 4.8,
+        createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+        status: 'active',
+        featured: false,
+        whatsapp: '(11) 98888-8888',
+        brand: 'Focusrite',
+        model: 'Scarlett 2i2',
+        acceptsNegotiation: false,
+        acceptsTrade: false,
+        expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    } as Product,
   ],
   notifications: [
     {
@@ -426,7 +477,7 @@ export const SEED_DATABASE = {
       createdAt: new Date(Date.now() - 86400000).toISOString()
     } as Notification
   ],
-  favorites: ['p2'],
+  favorites: ['p2', 'p6', 'p15'],
   banners: [
     {
        id: 'b1',
@@ -513,6 +564,34 @@ export const SEED_DATABASE = {
     maintenanceMode: false,
     maintenanceMessage: 'Estamos em manutenção para melhorar sua experiência. Voltamos logo!',
     bannerRotationInterval: 5,
+    
+    // New Settings
+    emailConfig: {
+       supportEmail: 'suporte@musicplace.com.br',
+       contactEmail: 'contato@musicplace.com.br',
+       senderName: 'Equipe MusicPlace',
+       smtpHost: 'smtp.gmail.com',
+       smtpPort: 465,
+       smtpUser: '',
+       smtpPass: '',
+       encryption: 'ssl',
+       replyTo: 'no-reply@musicplace.com.br'
+    },
+    whatsappConfig: {
+       officialNumber: '',
+       botId: '',
+       welcomeMessage: 'Olá! Bem-vindo ao MusicPlace. Como posso ajudar?',
+       humanTimeoutMinutes: 1,
+       humanAgentNumber: '',
+       enabled: true
+    },
+
+    // Sell CTA Defaults
+    sellCtaTitle: 'Venda para milhões de músicos',
+    sellCtaText: 'Junte-se à maior comunidade de equipamentos musicais. Baixas taxas, pagamento rápido e segurança garantida.',
+    sellCtaButtonText: 'Começar a vender agora',
+    sellCtaImage: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=1920&auto=format&fit=crop',
+
     paymentGateway: 'mercadopago',
     recurringPayments: true,
     extraFeesPercentage: 0,

@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
@@ -11,6 +12,9 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { BlogList } from './pages/blog/BlogList';
 import { BlogPostPage } from './pages/blog/BlogPost';
+import { SupportPage } from './pages/Support';
+import { ContactPage } from './pages/Contact';
+import { WhatsAppButton } from './components/WhatsAppButton';
 
 // Admin Imports
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -38,6 +42,7 @@ import { EditAd } from './pages/account/EditAd';
 function App() {
   return (
     <HashRouter>
+      <WhatsAppButton />
       <Routes>
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
@@ -68,6 +73,8 @@ function App() {
               <Route path="/blog/:id" element={<BlogPostPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Register />} />
+              <Route path="/suporte" element={<SupportPage />} />
+              <Route path="/contato" element={<ContactPage />} />
               
               {/* Account Routes - Wrapped in AccountLayout */}
               <Route path="/minha-conta/perfil" element={<AccountLayout><Profile /></AccountLayout>} />

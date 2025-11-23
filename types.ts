@@ -1,4 +1,5 @@
 
+
 export enum Condition {
   NOVO = 'Novo',
   SEMINOVO = 'Seminovo',
@@ -161,6 +162,18 @@ export interface Message {
   read: boolean;
 }
 
+export interface Ticket {
+  id: string;
+  userId?: string; // Optional (guest)
+  name: string;
+  email: string;
+  type: 'Tecnico' | 'Pagamento' | 'Conta' | 'Outro';
+  subject: string;
+  message: string;
+  status: 'open' | 'closed';
+  createdAt: string;
+}
+
 // --- ADMIN & CONFIGURATION TYPES ---
 
 export interface Plan {
@@ -239,10 +252,28 @@ export interface MarketingConfig {
   popupImage?: string;
   popupLink?: string;
   pushEnabled: boolean;
-  smtpHost?: string;
-  smtpUser?: string;
-  smtpPass?: string;
-  whatsappNumber?: string;
+  // Old smtp fields removed, moved to SystemSettings
+}
+
+export interface EmailConfig {
+  supportEmail: string;
+  contactEmail: string;
+  senderName: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPass: string; // App Password
+  encryption: 'ssl' | 'tls' | 'none';
+  replyTo: string;
+}
+
+export interface WhatsappConfig {
+  officialNumber: string;
+  botId: string;
+  welcomeMessage: string;
+  humanTimeoutMinutes: number;
+  humanAgentNumber: string;
+  enabled: boolean;
 }
 
 export interface SystemSettings {
@@ -254,9 +285,19 @@ export interface SystemSettings {
   maintenanceMode: boolean;
   maintenanceMessage: string;
   
+  // New Email & Communication
+  emailConfig: EmailConfig;
+  whatsappConfig: WhatsappConfig;
+
   // Banners
   bannerRotationInterval: number; 
   
+  // Sell CTA Banner (Home)
+  sellCtaTitle: string;
+  sellCtaText: string;
+  sellCtaButtonText: string;
+  sellCtaImage: string;
+
   // Payment
   paymentGateway: 'mercadopago' | 'stripe' | 'pix_manual';
   mercadoPagoPublicKey?: string;
