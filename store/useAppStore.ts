@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Product, UserProfile, ProductStatus, Notification, Message, Banner, Category, Brand, Plan, Coupon, SystemSettings, ThemeConfig, ContentPage, MarketingConfig, Log, BlogPost, Ticket } from '../types';
@@ -436,11 +435,11 @@ export const useAppStore = create<AppState>()(
 
       requestPasswordReset: async (email) => {
         if (supabase) {
-            // Simpler redirect URL for HashRouter. 
-            // Supabase will append #access_token=...
-            // The AuthListener will detect the event and redirect to /redefinir-senha
+            // Construct the base URL without hash
+            const siteUrl = window.location.origin + window.location.pathname;
+            
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin, 
+                redirectTo: siteUrl, 
             });
             if (error) return { success: false, error: error.message };
             return { success: true };

@@ -1,18 +1,32 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 
 export const AuthListener: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!supabase) return;
 
+    // 1. Verificação Manual de Hash (Correção para HashRouter)
+    // O Supabase envia: domain.com/#access_token=...&type=recovery
+    // O HashRouter acha que a rota é "/access_token=..." e falha, indo para Home.
+    // Aqui interceptamos isso manualmente.
+    const hash = window.location.hash;
+    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
+        console.log("Token de recuperação detectado na URL. Redirecionando para redefinição...");
+        // Pequeno delay para garantir que o Supabase Client processe o token da URL
+        setTimeout(() => {
+            navigate('/redefinir-senha');
+        }, 500);
+    }
+
+    // 2. Listener Padrão do Supabase
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      // Se o usuário clicar no link de recuperação de senha do e-mail
       if (event === 'PASSWORD_RECOVERY') {
-        console.log("Evento de Recuperação de Senha detectado. Redirecionando...");
+        console.log("Evento Supabase: PASSWORD_RECOVERY");
         navigate('/redefinir-senha');
       }
     });
@@ -20,7 +34,7 @@ export const AuthListener: React.FC = () => {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location]);
 
-  return null; // Este componente não renderiza nada visualmente
+  return null;
 };
