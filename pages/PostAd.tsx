@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Camera, AlertTriangle, User, Phone, X, Star } from 'lucide-react';
@@ -46,16 +47,16 @@ export const PostAd: React.FC = () => {
     if (!formData.brand || formData.brand === 'Outros') return activeCategories;
 
     // Find the selected brand object to get its description/instruments
-    const selectedBrandObj = activeBrands.find(b => b.name.toLowerCase() === formData.brand.toLowerCase());
+    const selectedBrandObj = activeBrands.find(b => (b.name || '').toLowerCase() === (formData.brand || '').toLowerCase());
     
     // If brand not found or has no description, show all categories
     if (!selectedBrandObj || !selectedBrandObj.description) return activeCategories;
 
-    const desc = selectedBrandObj.description.toLowerCase();
+    const desc = (selectedBrandObj.description || '').toLowerCase();
 
     // Filter categories based on keywords found in brand description
     const relevant = activeCategories.filter(cat => {
-      const catName = cat.name.toLowerCase();
+      const catName = (cat.name || '').toLowerCase();
       
       // Map complex category names to simple keywords present in brand descriptions
       if (cat.id === 'guitarras' && (desc.includes('guitarra') || desc.includes('violão'))) return true;

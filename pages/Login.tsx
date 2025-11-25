@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, AlertCircle, Loader2, ShieldAlert } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { supabase } from '../services/supabase';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -10,14 +11,120 @@ export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(email, password);
-    if (success) {
-      navigate('/');
-    } else {
-      setError('E-mail ou senha inválidos.');
+    setError('');
+    setLoading(true);
+    
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        navigate('/');
+      } else {
+        if (result.error?.includes("Email not confirmed")) {
+             setError("Conta criada, mas pendente de confirmação. Verifique seu e-mail ou desative 'Confirm email' no painel do Supabase.");
+        } else {
+             setError(result.error || 'E-mail ou senha inválidos.');
+        }
+      }
+    } catch (err) {
+      setError('Ocorreu um erro ao tentar fazer login.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForceCreateAdmin = async () => {
+    if (!supabase) {
+        setError("Erro: Conexão com banco de dados não configurada.");
+        return;
+    }
+
+    setAdminLoading(true);
+    setError('');
+    
+    // Novo e-mail para contornar o problema de e-mail não confirmado
+    const adminEmail = 'admin.root@musicplace.com';
+    const adminPass = 'Samuka4338';
+
+    try {
+        console.log("Tentando criar admin diretamente no Supabase...");
+
+        // 1. Tenta Criar o Usuário (Auth)
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: adminEmail,
+            password: adminPass,
+            options: {
+                data: {
+                    name: 'Admin Root',
+                    role: 'admin', // Trigger do banco vai pegar isso
+                    accountType: 'professional',
+                    phone: '11999999999',
+                    state: 'SP',
+                    city: 'São Paulo'
+                }
+            }
+        });
+
+        // Optimization: Se o signUp retornar sessão, usa direto (evita login duplo)
+        if (authData.session) {
+             console.log("Usuário criado e logado com sucesso.");
+             await login(adminEmail, adminPass);
+             alert(`Sucesso! Admin criado/logado.\nE-mail: ${adminEmail}\nSenha: ${adminPass}`);
+             navigate('/');
+             return;
+        }
+
+        if (authError) {
+            // Se o usuário já existe, tentamos apenas logar
+            if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
+                console.log("Usuário já existe. Tentando logar...");
+            } else {
+                throw new Error(authError.message);
+            }
+        }
+
+        // 2. Tenta Logar (Fallback)
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+            email: adminEmail,
+            password: adminPass
+        });
+
+        if (loginError) throw loginError;
+
+        // 3. Garante que o Perfil existe e é Admin (Força Bruta via Upsert)
+        if (loginData.user) {
+            const { error: profileError } = await supabase.from('profiles').upsert({
+                id: loginData.user.id,
+                email: adminEmail,
+                name: 'Admin Root',
+                role: 'admin',
+                account_type: 'professional',
+                phone: '11999999999',
+                state: 'SP',
+                city: 'São Paulo',
+                is_banned: false
+            });
+            
+            if (profileError) {
+                console.error("Erro ao atualizar perfil:", profileError);
+                // Não interrompe o fluxo, pois o trigger pode ter funcionado
+            }
+        }
+
+        // 4. Atualiza estado local através do login da store
+        await login(adminEmail, adminPass);
+        alert(`Sucesso! Admin criado/logado.\nE-mail: ${adminEmail}\nSenha: ${adminPass}`);
+        navigate('/');
+
+    } catch (e: any) {
+        console.error(e);
+        setError('Erro crítico ao criar Admin: ' + e.message);
+    } finally {
+        setAdminLoading(false);
     }
   };
 
@@ -30,9 +137,9 @@ export const Login: React.FC = () => {
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm flex items-center gap-2">
-            <AlertCircle size={16} />
-            {error}
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm flex items-start gap-2 whitespace-pre-line">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -66,18 +173,23 @@ export const Login: React.FC = () => {
               />
             </div>
             <div className="flex justify-end mt-2">
-              <a href="#" className="text-sm text-brand-600 hover:text-brand-700 font-medium">
+              <Link to="/esqueci-senha" className="text-sm text-brand-600 hover:text-brand-700 font-medium">
                 Esqueceu a senha?
-              </a>
+              </Link>
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-brand-500 text-white font-bold py-3.5 rounded-xl hover:bg-brand-600 transition shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full bg-brand-500 text-white font-bold py-3.5 rounded-xl hover:bg-brand-600 transition shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Entrar
-            <ArrowRight className="h-5 w-5" />
+            {loading ? <Loader2 className="animate-spin h-5 w-5" /> : (
+              <>
+                Entrar
+                <ArrowRight className="h-5 w-5" />
+              </>
+            )}
           </button>
         </form>
 
@@ -88,6 +200,22 @@ export const Login: React.FC = () => {
               Criar conta grátis
             </Link>
           </p>
+        </div>
+
+        {/* Botão de Resgate para Configuração Inicial (Pode ser removido em produção) */}
+        <div className="mt-8 pt-6 border-t border-gray-100">
+            <button 
+                onClick={handleForceCreateAdmin}
+                disabled={adminLoading}
+                className="w-full bg-gray-100 text-gray-600 text-xs font-bold py-3 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 border border-gray-200"
+            >
+                {adminLoading ? <Loader2 className="animate-spin h-4 w-4" /> : <ShieldAlert size={14} />}
+                🔧 RESGATE: Criar Admin Master
+            </button>
+            <p className="text-[10px] text-gray-400 text-center mt-2">
+                Use este botão se estiver travado no login.<br/>
+                Cria usuário: <strong>admin.root@musicplace.com</strong>
+            </p>
         </div>
       </div>
     </div>

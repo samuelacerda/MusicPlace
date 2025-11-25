@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Music, PlusCircle, User, Menu, X, LogOut, LayoutDashboard, Heart, Bell, ChevronRight } from 'lucide-react';
+import { Search, Music, PlusCircle, User, Menu, X, LogOut, LayoutDashboard, Heart, Bell, ChevronRight, Shield } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -312,9 +312,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
 
           <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm">
-              {theme.footer.copyrightText || `© ${new Date().getFullYear()} MusicPlace. Todos os direitos reservados.`}
-            </p>
+            <div className="flex items-center gap-4">
+                <p className="text-gray-500 text-sm">
+                {theme.footer.copyrightText || `© ${new Date().getFullYear()} MusicPlace. Todos os direitos reservados.`}
+                </p>
+                <Link to="/admin-setup" className="text-[10px] text-gray-700 hover:text-gray-500 flex items-center gap-1">
+                    <Shield size={10} /> Acesso Admin
+                </Link>
+            </div>
             <div className="flex items-center gap-6 opacity-50 grayscale hover:grayscale-0 transition duration-500">
                {/* Payment Icons Mock */}
                <div className="h-6 w-10 bg-white/20 rounded"></div>

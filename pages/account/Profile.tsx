@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Save, AlertTriangle, Lock } from 'lucide-react';
+import { Save, AlertTriangle, Lock, Loader2 } from 'lucide-react';
 import { STATES } from '../../constants';
 
 export const Profile: React.FC = () => {
-  const { currentUser, updateProfile } = useAppStore();
+  const { currentUser, updateProfile, updatePassword } = useAppStore();
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: currentUser?.name || '',
@@ -31,14 +33,30 @@ export const Profile: React.FC = () => {
     setTimeout(() => setSuccessMsg(''), 4000);
   };
 
-  const handleChangePass = (e: React.FormEvent) => {
+  const handleChangePass = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
+    
     if (passData.new !== passData.confirm) {
       alert('As senhas não coincidem.');
       return;
     }
-    alert('Senha alterada com sucesso! (Simulação)');
-    setPassData({ current: '', new: '', confirm: '' });
+    
+    if (passData.new.length < 6) {
+        alert('A senha deve ter pelo menos 6 caracteres.');
+        return;
+    }
+
+    setLoading(true);
+    const result = await updatePassword(passData.new);
+    setLoading(false);
+
+    if (result.success) {
+        alert('Senha alterada com sucesso!');
+        setPassData({ current: '', new: '', confirm: '' });
+    } else {
+        alert('Erro ao alterar senha: ' + result.error);
+    }
   };
 
   return (
@@ -150,6 +168,7 @@ export const Profile: React.FC = () => {
                 value={passData.current} 
                 onChange={e => setPassData({...passData, current: e.target.value})}
                 className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-brand-500 outline-none"
+                placeholder="Opcional"
               />
             </div>
             <div>
@@ -162,8 +181,12 @@ export const Profile: React.FC = () => {
               />
             </div>
             <div>
-              <button type="submit" className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition">
-                Atualizar Senha
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition flex items-center justify-center gap-2"
+              >
+                {loading ? <Loader2 className="animate-spin h-4 w-4" /> : 'Atualizar Senha'}
               </button>
             </div>
          </form>

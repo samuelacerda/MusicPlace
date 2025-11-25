@@ -1,6 +1,5 @@
 
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
@@ -15,6 +14,11 @@ import { BlogPostPage } from './pages/blog/BlogPost';
 import { SupportPage } from './pages/Support';
 import { ContactPage } from './pages/Contact';
 import { WhatsAppButton } from './components/WhatsAppButton';
+import { AdminSetup } from './pages/AdminSetup';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
+import { useAppStore } from './store/useAppStore';
+import { AuthListener } from './components/AuthListener'; // Import AuthListener
 
 // Admin Imports
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -40,10 +44,20 @@ import { Favorites } from './pages/account/Favorites';
 import { EditAd } from './pages/account/EditAd';
 
 function App() {
+  const { fetchData } = useAppStore();
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   return (
     <HashRouter>
+      <AuthListener /> {/* Global Auth Event Listener */}
       <WhatsAppButton />
       <Routes>
+        {/* Secret Admin Setup Route */}
+        <Route path="/admin-setup" element={<AdminSetup />} />
+
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
         <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
@@ -73,6 +87,8 @@ function App() {
               <Route path="/blog/:id" element={<BlogPostPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/cadastro" element={<Register />} />
+              <Route path="/esqueci-senha" element={<ForgotPassword />} />
+              <Route path="/redefinir-senha" element={<ResetPassword />} />
               <Route path="/suporte" element={<SupportPage />} />
               <Route path="/contato" element={<ContactPage />} />
               

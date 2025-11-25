@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Check, X, ExternalLink, Plus, Camera, Trash2, AlertCircle } from 'lucide-react';
@@ -41,13 +42,13 @@ export const AdminListings: React.FC = () => {
   const filteredCategories = useMemo(() => {
     if (!newAd.brand || newAd.brand === 'Outros') return activeCategories;
 
-    const selectedBrandObj = activeBrands.find(b => b.name.toLowerCase() === newAd.brand.toLowerCase());
+    const selectedBrandObj = activeBrands.find(b => (b.name || '').toLowerCase() === (newAd.brand || '').toLowerCase());
     if (!selectedBrandObj || !selectedBrandObj.description) return activeCategories;
 
-    const desc = selectedBrandObj.description.toLowerCase();
+    const desc = (selectedBrandObj.description || '').toLowerCase();
 
     const relevant = activeCategories.filter(cat => {
-      const catName = cat.name.toLowerCase();
+      const catName = (cat.name || '').toLowerCase();
       if (cat.id === 'guitarras' && (desc.includes('guitarra') || desc.includes('violão'))) return true;
       if (cat.id === 'baixos' && desc.includes('baixo')) return true;
       if (cat.id === 'violoes' && (desc.includes('violão') || desc.includes('violao'))) return true;

@@ -155,8 +155,8 @@ export const AdminUsers: React.FC = () => {
   };
 
   const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

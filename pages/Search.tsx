@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
@@ -139,13 +140,13 @@ export const SearchPage: React.FC = () => {
 
       if (search) {
         const query = search.toLowerCase();
-        const matchesTitle = p.title.toLowerCase().includes(query);
-        const matchesDesc = p.description.toLowerCase().includes(query);
+        const matchesTitle = (p.title || '').toLowerCase().includes(query);
+        const matchesDesc = (p.description || '').toLowerCase().includes(query);
         if (!matchesTitle && !matchesDesc) return false;
       }
 
       if (category && p.category !== activeCategories.find(c => c.id === category)?.name) {
-         if (p.category.toLowerCase() !== category.replace(/-/g, ' ').split(' ')[0].toLowerCase()) {
+         if ((p.category || '').toLowerCase() !== category.replace(/-/g, ' ').split(' ')[0].toLowerCase()) {
              const catObj = activeCategories.find(c => c.id === category);
              if (catObj && p.category !== catObj.name) return false;
          }
