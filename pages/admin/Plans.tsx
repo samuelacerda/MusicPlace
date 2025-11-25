@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Plus, Trash2, Edit2, CheckCircle, XCircle, CreditCard, Check } from 'lucide-react';
+import { Plus, Trash2, Edit2, CheckCircle, XCircle, CreditCard, Check, RefreshCcw } from 'lucide-react';
 import { Plan } from '../../types';
 
 export const AdminPlans: React.FC = () => {
-  const { plans, addPlan, updatePlan, deletePlan } = useAppStore();
+  const { plans, addPlan, updatePlan, deletePlan, restoreDefaultPlans } = useAppStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -33,7 +33,7 @@ export const AdminPlans: React.FC = () => {
   };
 
   const handleCreate = () => {
-    setFormData({ ...initialForm, id: Date.now().toString() });
+    setFormData({ ...initialForm, id: `plan-${Date.now().toString()}` });
     setEditingId(null);
     setIsEditing(true);
   };
@@ -43,13 +43,19 @@ export const AdminPlans: React.FC = () => {
     if (editingId) {
       updatePlan(editingId, formData);
     } else {
-      addPlan({ ...formData, id: Date.now().toString() });
+      addPlan({ ...formData, id: formData.id || `plan-${Date.now().toString()}` });
     }
     setIsEditing(false);
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Tem certeza?')) deletePlan(id);
+  };
+
+  const handleRestore = () => {
+      if(confirm("Isso irá restaurar os planos padrão (Básico, Profissional, Loja) e pode duplicar se já existirem com IDs diferentes. Continuar?")) {
+          restoreDefaultPlans();
+      }
   };
 
   const addBenefit = () => {
@@ -167,16 +173,22 @@ export const AdminPlans: React.FC = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Planos de Assinatura</h1>
           <p className="text-gray-500">Gerencie os níveis de acesso da plataforma.</p>
         </div>
-        <button onClick={handleCreate} className="bg-brand-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-700">
-          <Plus size={18} /> Novo Plano
-        </button>
+        <div className="flex gap-2">
+            <button onClick={handleRestore} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-200 border border-gray-200 text-sm">
+                <RefreshCcw size={16} /> Restaurar Padrões
+            </button>
+            <button onClick={handleCreate} className="bg-brand-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-700">
+                <Plus size={18} /> Novo Plano
+            </button>
+        </div>
       </div>
 
+      {/* Responsive Grid: 1 col mobile, 2 col tablet, 3 col desktop */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
          {plans.map(plan => (
            <div key={plan.id} className={`bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col ${plan.active ? 'border-gray-200' : 'border-red-200 bg-red-50 opacity-75'}`}>
@@ -186,7 +198,7 @@ export const AdminPlans: React.FC = () => {
                     {!plan.active && <span className="text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded">Inativo</span>}
                  </div>
                  <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                 <p className="text-gray-500 text-sm mb-4">{plan.description}</p>
+                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{plan.description}</p>
                  <div className="text-2xl font-bold text-gray-900 mb-6">
                     R$ {plan.price.toFixed(2)} <span className="text-sm font-normal text-gray-500">/{getDurationLabel(plan.duration)}</span>
                  </div>
@@ -200,10 +212,10 @@ export const AdminPlans: React.FC = () => {
                  </ul>
               </div>
               <div className="p-4 border-t border-gray-100 bg-gray-50 flex gap-3">
-                 <button onClick={() => handleEdit(plan)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-white border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-100">
+                 <button onClick={() => handleEdit(plan)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-white border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-100 transition">
                     <Edit2 size={16} /> Editar
                  </button>
-                 <button onClick={() => handleDelete(plan.id)} className="p-2 text-red-500 hover:bg-red-100 rounded-lg">
+                 <button onClick={() => handleDelete(plan.id)} className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition">
                     <Trash2 size={20} />
                  </button>
               </div>

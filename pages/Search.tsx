@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
@@ -145,11 +143,32 @@ export const SearchPage: React.FC = () => {
         if (!matchesTitle && !matchesDesc) return false;
       }
 
-      if (category && p.category !== activeCategories.find(c => c.id === category)?.name) {
-         if ((p.category || '').toLowerCase() !== category.replace(/-/g, ' ').split(' ')[0].toLowerCase()) {
-             const catObj = activeCategories.find(c => c.id === category);
-             if (catObj && p.category !== catObj.name) return false;
+      if (category) {
+         const prodCat = (p.category || '').toLowerCase().trim();
+         const filterCatObj = activeCategories.find(c => c.id === category);
+         const filterCatName = filterCatObj ? filterCatObj.name.toLowerCase().trim() : category.toLowerCase().trim();
+         
+         // 1. Exact match on Name (most common)
+         let match = prodCat === filterCatName;
+         
+         // 2. Match on ID (from URL params)
+         if (!match) {
+             match = prodCat === category.toLowerCase().trim();
          }
+
+         // 3. Normalized fuzzy match (handle accents, hyphens)
+         if (!match) {
+             const normProd = prodCat.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/-/g, ' ');
+             const normFilter = filterCatName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/-/g, ' ');
+             match = normProd === normFilter;
+         }
+         
+         // 4. Containment fallback (e.g. "Guitarras" matches "Guitarras Elétricas")
+         if (!match && filterCatName) {
+             match = prodCat.includes(filterCatName) || filterCatName.includes(prodCat);
+         }
+
+         if (!match) return false;
       }
 
       if (subcategory && p.subcategory !== subcategory) return false;

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Music, PlusCircle, User, Menu, X, LogOut, LayoutDashboard, Heart, Bell, ChevronRight, Shield } from 'lucide-react';
+import { Search, Music, PlusCircle, User, Menu, X, LogOut, LayoutDashboard, Heart, Bell, ChevronRight, Shield, ShoppingBag } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -178,18 +178,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               </form>
               <nav className="flex flex-col gap-2">
                 
-                <div className="flex items-center justify-around mb-4 bg-gray-50 p-3 rounded-xl">
-                   <Link to={currentUser ? "/minha-conta/favoritos" : "/login"} onClick={() => setIsMenuOpen(false)} className="flex flex-col items-center gap-1 text-xs font-medium text-gray-600">
-                      <Heart size={24} className="text-brand-500" /> Favoritos
-                   </Link>
-                   <Link to={currentUser ? "/minha-conta/notificacoes" : "/login"} onClick={() => setIsMenuOpen(false)} className="flex flex-col items-center gap-1 text-xs font-medium text-gray-600">
-                      <Bell size={24} className="text-brand-500" /> Notificações
-                   </Link>
-                </div>
-
                 {currentUser ? (
-                  <div className="bg-gray-50 p-4 rounded-xl mb-4">
-                    <div className="flex items-center gap-3 mb-4">
+                  <>
+                    <div className="flex items-center gap-3 mb-2 px-2">
                       <div className="w-10 h-10 bg-brand-600 text-white rounded-full flex items-center justify-center font-bold">
                         {currentUser.name.charAt(0)}
                       </div>
@@ -198,20 +189,34 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         <p className="text-xs text-gray-500">{currentUser.email}</p>
                       </div>
                     </div>
-                    <Link to="/minha-conta/perfil" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm text-gray-700 border-b border-gray-200">Meu Perfil</Link>
-                    <Link to="/minha-conta/anuncios" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm text-gray-700 border-b border-gray-200">Meus Anúncios</Link>
-                    {currentUser.role === 'admin' && (
-                       <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="block py-2 text-sm font-bold text-yellow-600 border-b border-gray-200">Painel Admin</Link>
-                    )}
-                    <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="block w-full text-left py-2 text-sm text-red-600 font-medium">Sair da conta</button>
-                  </div>
+                    
+                    <div className="space-y-1 mb-4">
+                        <Link to="/minha-conta/perfil" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                            <User size={20} className="text-brand-500" /> Meu Perfil
+                        </Link>
+                        <Link to="/minha-conta/anuncios" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                            <ShoppingBag size={20} className="text-brand-500" /> Meus Anúncios
+                        </Link>
+                        <Link to="/minha-conta/favoritos" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
+                            <Heart size={20} className="text-brand-500" /> Meus Favoritos
+                        </Link>
+                        {currentUser.role === 'admin' && (
+                            <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-yellow-50 text-yellow-700 font-medium">
+                                <LayoutDashboard size={20} /> Painel Admin
+                            </Link>
+                        )}
+                        <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600 font-medium text-left">
+                            <LogOut size={20} /> Sair da Conta
+                        </button>
+                    </div>
+                  </>
                 ) : (
                   <Link to="/login" onClick={() => setIsMenuOpen(false)} className="bg-brand-600 text-white text-center py-3 rounded-xl font-bold mb-4 shadow-lg">
                     Entrar ou Cadastrar
                   </Link>
                 )}
 
-                <div className="space-y-1">
+                <div className="space-y-1 border-t border-gray-100 pt-4">
                   <p className="px-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Navegar</p>
                   <Link to="/anunciar" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 font-medium">
                     <PlusCircle size={20} className="text-brand-500" /> Vender Equipamento

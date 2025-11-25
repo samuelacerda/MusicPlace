@@ -100,33 +100,42 @@ export const AdminCoupons: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full text-left text-sm">
-           <thead className="bg-gray-50 border-b border-gray-200 text-gray-700">
-              <tr>
-                 <th className="p-4">Código</th>
-                 <th className="p-4">Desconto</th>
-                 <th className="p-4">Usos</th>
-                 <th className="p-4">Status</th>
-                 <th className="p-4 text-right">Ações</th>
-              </tr>
-           </thead>
-           <tbody className="divide-y divide-gray-100">
-              {coupons.map(c => (
-                 <tr key={c.id} className="hover:bg-gray-50">
-                    <td className="p-4 font-mono font-bold text-brand-600 bg-brand-50 inline-block m-2 rounded">{c.code}</td>
-                    <td className="p-4">{c.value} {c.discountType === 'percentage' ? '%' : 'R$'}</td>
-                    <td className="p-4">{c.usageCount}</td>
-                    <td className="p-4">
-                       {c.active ? <span className="text-green-600 font-bold text-xs">Ativo</span> : <span className="text-red-600 font-bold text-xs">Inativo</span>}
-                    </td>
-                    <td className="p-4 text-right flex justify-end gap-2">
-                        <button onClick={() => handleEdit(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded"><Edit2 size={16}/></button>
-                        <button onClick={() => handleDelete(c.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 size={16}/></button>
-                    </td>
-                 </tr>
-              ))}
-           </tbody>
-        </table>
+        <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left text-sm min-w-[600px]">
+            <thead className="bg-gray-50 border-b border-gray-200 text-gray-700">
+                <tr>
+                    <th className="p-4 whitespace-nowrap">Código</th>
+                    <th className="p-4 whitespace-nowrap">Desconto</th>
+                    <th className="p-4 whitespace-nowrap">Usos</th>
+                    <th className="p-4 whitespace-nowrap">Status</th>
+                    <th className="p-4 text-right whitespace-nowrap">Ações</th>
+                </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+                {coupons.map(c => (
+                    <tr key={c.id} className="hover:bg-gray-50">
+                        <td className="p-4">
+                            <span className="font-mono font-bold text-brand-600 bg-brand-50 px-2 py-1 rounded border border-brand-100">
+                                {c.code}
+                            </span>
+                        </td>
+                        <td className="p-4 font-medium">{c.value} {c.discountType === 'percentage' ? '%' : 'R$'}</td>
+                        <td className="p-4 text-gray-500">{c.usageCount} vezes</td>
+                        <td className="p-4">
+                        {c.active ? 
+                            <span className="text-green-700 font-bold text-xs bg-green-100 px-2 py-1 rounded-full border border-green-200">Ativo</span> : 
+                            <span className="text-red-700 font-bold text-xs bg-red-100 px-2 py-1 rounded-full border border-red-200">Inativo</span>
+                        }
+                        </td>
+                        <td className="p-4 text-right flex justify-end gap-2">
+                            <button onClick={() => handleEdit(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded border border-transparent hover:border-blue-100 transition"><Edit2 size={16}/></button>
+                            <button onClick={() => handleDelete(c.id)} className="p-2 text-red-600 hover:bg-red-50 rounded border border-transparent hover:border-red-100 transition"><Trash2 size={16}/></button>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+            </table>
+        </div>
       </div>
     </div>
   );

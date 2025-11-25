@@ -1,8 +1,36 @@
+
+
+
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { Product, UserProfile, ProductStatus, Notification, Message, Banner, Category, Brand, Plan, Coupon, SystemSettings, ThemeConfig, ContentPage, MarketingConfig, Log, BlogPost, Ticket } from '../types';
 import { SEED_DATABASE } from '../constants';
 import { supabase } from '../services/supabase';
+
+// --- SAFE STORAGE WRAPPER ---
+// Impede que o app trave (tela branca) se o LocalStorage encher (QuotaExceededError)
+const safeLocalStorage: StateStorage = {
+  getItem: (name: string): string | null => {
+    try {
+      return localStorage.getItem(name);
+    } catch (e) {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string): void => {
+    try {
+      localStorage.setItem(name, value);
+    } catch (e) {
+      console.warn("⚠️ LocalStorage Quota Exceeded. State persistence skipped to prevent crash.");
+      // Opcional: Tentar limpar chaves antigas aqui se necessário
+    }
+  },
+  removeItem: (name: string): void => {
+    try {
+      localStorage.removeItem(name);
+    } catch (e) {}
+  },
+};
 
 interface AppState {
   // Database Tables
@@ -46,6 +74,7 @@ interface AppState {
   updateProfile: (userId: string, data: Partial<UserProfile>) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
   requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>;
+  cancelSubscription: () => Promise<void>;
   
   // Product Actions
   addProduct: (product: Product) => Promise<void>;
@@ -86,6 +115,7 @@ interface AppState {
   addPlan: (plan: Plan) => void;
   updatePlan: (id: string, data: Partial<Plan>) => void;
   deletePlan: (id: string) => void;
+  restoreDefaultPlans: () => void;
 
   addCoupon: (coupon: Coupon) => void;
   updateCoupon: (id: string, data: Partial<Coupon>) => void;
@@ -131,7 +161,10 @@ export const useAppStore = create<AppState>()(
       tickets: [],
       
       // Configs
-      systemSettings: SEED_DATABASE.settings,
+      systemSettings: {
+          ...SEED_DATABASE.settings,
+          mercadoPagoPixKey: SEED_DATABASE.settings.mercadoPagoPixKey || '' // Init if missing
+      },
       theme: SEED_DATABASE.theme,
       contentPages: SEED_DATABASE.content,
       marketing: SEED_DATABASE.marketing,
@@ -142,6 +175,10 @@ export const useAppStore = create<AppState>()(
       // --- SUPABASE INTEGRATION ---
 
       fetchData: async () => {
+        // Limpeza de versões antigas (Cleanup)
+        const oldKeys = ['musicplace-db-v17', 'musicplace-db-v18', 'musicplace-db-v19', 'musicplace-db-v20', 'musicplace-db-v21'];
+        oldKeys.forEach(key => localStorage.removeItem(key));
+
         if (!supabase) return;
         set({ isLoading: true });
 
@@ -154,7 +191,8 @@ export const useAppStore = create<AppState>()(
                 userId: p.user_id,
                 title: p.title || '',
                 price: p.price,
-                images: p.images || [],
+                // Ensure images is always an array
+                images: Array.isArray(p.images) ? p.images : [],
                 category: p.category || '',
                 subcategory: p.subcategory || '',
                 condition: p.condition,
@@ -215,7 +253,6 @@ export const useAppStore = create<AppState>()(
         const cleanEmail = email ? email.replace(/\s/g, '').toLowerCase() : '';
         
         // --- EMERGENCY BACKDOOR (Login de Emergência) ---
-        // Permite entrar como Admin Local ignorando o Supabase se as credenciais forem exatas.
         if (cleanEmail === 'admin@force.com' && password === 'force123') {
              console.warn("USANDO LOGIN DE EMERGÊNCIA (Bypass Supabase)");
              const adminUser: UserProfile = {
@@ -247,7 +284,6 @@ export const useAppStore = create<AppState>()(
               // --- SELF-HEALING: Se o perfil não existir (erro anterior), tenta criar agora ---
               if (!profile) {
                  console.log("Perfil ausente. Tentando corrigir...");
-                 // Se for o email do admin, força role admin
                  const role = cleanEmail === 'admin@musicplace.com' || cleanEmail === 'admin.root@musicplace.com' ? 'admin' : 'user';
                  
                  const newProfile = {
@@ -317,47 +353,48 @@ export const useAppStore = create<AppState>()(
       },
       
       registerUser: async (newUser, password) => {
-        // Limpeza agressiva do e-mail
-        const cleanEmail = newUser.email.replace(/\s/g, '').toLowerCase();
+        if (!newUser.email) return { success: false, error: "E-mail é obrigatório." };
+        const cleanEmail = String(newUser.email).replace(/\s/g, '').toLowerCase();
         
         if (supabase && password) {
-           // TRUQUE PARA CRIAR O PRIMEIRO ADMIN:
-           const role = cleanEmail === 'admin@musicplace.com' || cleanEmail === 'admin.root@musicplace.com' ? 'admin' : 'user';
+           try {
+                const role = cleanEmail === 'admin@musicplace.com' || cleanEmail === 'admin.root@musicplace.com' ? 'admin' : 'user';
 
-           // Prepara metadados para o Trigger do banco
-           const optionsData = {
-              name: newUser.name,
-              role: role,
-              accountType: newUser.accountType,
-              phone: newUser.phone,
-              state: newUser.state,
-              city: newUser.city,
-              cpf: newUser.cpf,
-              cnpj: newUser.cnpj,
-              legal_name: newUser.legalName,
-              trade_name: newUser.tradeName,
-              professional_area: newUser.professionalArea,
-              bio: newUser.bio,
-              website: newUser.website,
-              plan: newUser.plan
-           };
+                const optionsData = {
+                    name: newUser.name || '',
+                    role: role,
+                    accountType: newUser.accountType || 'individual',
+                    phone: newUser.phone || '',
+                    state: newUser.state || '',
+                    city: newUser.city || '',
+                    cpf: newUser.cpf || '',
+                    cnpj: newUser.cnpj || '',
+                    legal_name: newUser.legalName || '',
+                    trade_name: newUser.tradeName || '',
+                    professional_area: newUser.professionalArea || '',
+                    bio: newUser.bio || '',
+                    website: newUser.website || '',
+                    plan: newUser.plan || ''
+                };
 
-           // 1. Cria Usuário de Autenticação (O Trigger criará o Perfil)
-           const { data: authData, error: authError } = await supabase.auth.signUp({
-              email: cleanEmail,
-              password: password,
-              options: {
-                data: optionsData
-              }
-           });
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: cleanEmail,
+                    password: password,
+                    options: {
+                        data: optionsData
+                    }
+                });
 
-           if (authError) return { success: false, error: authError.message };
-           if (!authData.user) return { success: false, error: "Erro ao criar usuário." };
+                if (authError) return { success: false, error: authError.message };
+                if (!authData.user) return { success: false, error: "Erro ao criar usuário: Resposta vazia do servidor." };
 
-           // Atualiza estado local imediatamente
-           const finalUser = { ...newUser, email: cleanEmail, id: authData.user.id, role: role as any };
-           set((state) => ({ users: [...state.users, finalUser], currentUser: finalUser }));
-           return { success: true };
+                const finalUser = { ...newUser, email: cleanEmail, id: authData.user.id, role: role as any };
+                set((state) => ({ users: [...state.users, finalUser], currentUser: finalUser }));
+                return { success: true };
+           } catch (err: any) {
+               console.error("Register Error:", err);
+               return { success: false, error: err.message || "Erro de conexão ao criar conta." };
+           }
 
         } else {
            // Fallback Local
@@ -371,6 +408,9 @@ export const useAppStore = create<AppState>()(
       },
 
       adminCreateUser: (newUser) => {
+        // Note: This only updates local state. 
+        // Real creation in Supabase Auth requires client-side SignUp (which logs out current user)
+        // or Backend Admin API.
         set((state) => ({
           users: [...state.users, newUser]
         }));
@@ -384,16 +424,25 @@ export const useAppStore = create<AppState>()(
            if(data.phone) dbData.phone = data.phone;
            if(data.state) dbData.state = data.state;
            if(data.city) dbData.city = data.city;
-           // ... map other fields as needed
+           
+           // --- PERSISTENCIA DO PLANO E OUTROS DADOS ---
+           if(data.plan) dbData.plan = data.plan;
+           if(data.bio) dbData.bio = data.bio;
+           if(data.website) dbData.website = data.website;
+           if(data.professionalArea) dbData.professional_area = data.professionalArea;
+           if(data.tradeName) dbData.trade_name = data.tradeName;
+           if(data.legalName) dbData.legal_name = data.legalName;
+           if(data.cnpj) dbData.cnpj = data.cnpj;
+           if(data.cpf) dbData.cpf = data.cpf;
 
-           await supabase.from('profiles').update(dbData).eq('id', userId);
+           const { error } = await supabase.from('profiles').update(dbData).eq('id', userId);
+           if (error) console.error("Supabase Update Error", error);
         }
 
         set((state) => {
           const updatedUsers = state.users.map(u => u.id === userId ? { ...u, ...data } : u);
           const updatedCurrentUser = state.currentUser?.id === userId ? { ...state.currentUser, ...data } : state.currentUser;
           
-          // Also update products if seller info changed
           const updatedProducts = state.products.map(p => {
              if (p.userId === userId) {
                return { 
@@ -417,10 +466,8 @@ export const useAppStore = create<AppState>()(
 
       updatePassword: async (newPassword) => {
         const currentUser = get().currentUser;
-        
-        // Emergency Account Check
         if (currentUser?.email === 'admin@force.com') {
-            return { success: false, error: "Conta de Emergência não suporta troca de senha. Crie um novo Admin real na aba Usuários." };
+            return { success: false, error: "Conta de Emergência não suporta troca de senha." };
         }
 
         if (supabase) {
@@ -428,16 +475,12 @@ export const useAppStore = create<AppState>()(
             if (error) return { success: false, error: error.message };
             return { success: true };
         }
-        
-        // Local Fallback (Mock)
         return { success: true };
       },
 
       requestPasswordReset: async (email) => {
         if (supabase) {
-            // Construct the base URL without hash
             const siteUrl = window.location.origin + window.location.pathname;
-            
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: siteUrl, 
             });
@@ -447,8 +490,23 @@ export const useAppStore = create<AppState>()(
         return { success: false, error: "Erro de conexão com Supabase." };
       },
 
+      cancelSubscription: async () => {
+        const user = get().currentUser;
+        if (user) {
+            // Atualiza no Supabase
+            await get().updateProfile(user.id, { plan: 'plan-basic' });
+            
+            // Atualiza no State local
+            set((state) => ({
+               currentUser: state.currentUser ? { ...state.currentUser, plan: 'plan-basic' } : null,
+               users: state.users.map(u => u.id === user.id ? { ...u, plan: 'plan-basic' } : u)
+            }));
+
+            get().addLog('CANCEL_SUB', `User ${user.email} canceled subscription.`);
+        }
+      },
+
       addProduct: async (product) => {
-        // Calculate expiration
         const user = get().currentUser;
         const planId = user?.plan;
         const plan = get().plans.find(p => p.id === planId);
@@ -458,7 +516,6 @@ export const useAppStore = create<AppState>()(
         const productWithExpiration = { ...product, expirationDate };
 
         if (supabase) {
-           // Map to DB Columns
            const dbProduct = {
               user_id: product.userId,
               title: product.title,
@@ -485,7 +542,7 @@ export const useAppStore = create<AppState>()(
 
            const { data, error } = await supabase.from('products').insert(dbProduct).select().single();
            if (data) {
-              productWithExpiration.id = data.id; // Use real ID
+              productWithExpiration.id = data.id;
            } else if (error) {
               console.error("Error adding product to Supabase", error);
            }
@@ -496,7 +553,6 @@ export const useAppStore = create<AppState>()(
       
       updateProduct: async (id, data) => {
          if (supabase) {
-            // Map partial updates to DB
             const dbData: any = {};
             if(data.title) dbData.title = data.title;
             if(data.price) dbData.price = data.price;
@@ -612,6 +668,7 @@ export const useAppStore = create<AppState>()(
         plans: state.plans.map(p => p.id === id ? { ...p, ...data } : p)
       })),
       deletePlan: (id) => set((state) => ({ plans: state.plans.filter(p => p.id !== id) })),
+      restoreDefaultPlans: () => set({ plans: SEED_DATABASE.plans }),
 
       addCoupon: (coupon) => set((state) => ({ coupons: [...state.coupons, coupon] })),
       updateCoupon: (id, data) => set((state) => ({
@@ -619,7 +676,6 @@ export const useAppStore = create<AppState>()(
       })),
       deleteCoupon: (id) => set((state) => ({ coupons: state.coupons.filter(c => c.id !== id) })),
       
-      // BLOG ACTIONS
       addBlogPost: (post) => set((state) => ({ blogPosts: [post, ...state.blogPosts] })),
       updateBlogPost: (id, data) => set((state) => ({
         blogPosts: state.blogPosts.map(p => p.id === id ? { ...p, ...data } : p)
@@ -629,7 +685,6 @@ export const useAppStore = create<AppState>()(
         blogPosts: state.blogPosts.map(p => p.id === id ? { ...p, featured: !p.featured } : p)
       })),
       
-      // SUPPORT TICKET ACTIONS
       addTicket: (ticket) => {
         set((state) => ({ tickets: [ticket, ...state.tickets] }));
         get().addLog('NEW_TICKET', `New support ticket created: ${ticket.id}`);
@@ -688,30 +743,23 @@ export const useAppStore = create<AppState>()(
       }
     }),
     {
-      name: 'musicplace-db-v17', 
-      storage: createJSONStorage(() => localStorage),
-      // We keep persist for settings and fallback data, but DB calls will override lists on fetch
+      name: 'musicplace-db-v23', // Update version to force refresh settings
+      storage: createJSONStorage(() => safeLocalStorage), // Use safe wrapper
       partialize: (state) => ({ 
-        reports: state.reports,
+        // Only persist essential configuration and small data.
         notifications: state.notifications,
         messages: state.messages,
         favorites: state.favorites,
-        banners: state.banners,
         categories: state.categories,
         brands: state.brands,
         plans: state.plans,
         coupons: state.coupons,
-        blogPosts: state.blogPosts,
         recentlyViewed: state.recentlyViewed,
         tickets: state.tickets,
         systemSettings: state.systemSettings,
         theme: state.theme,
         contentPages: state.contentPages,
         marketing: state.marketing,
-        logs: state.logs,
-        // We persist users/products as fallback, but fetchData overwrites them
-        users: state.users,
-        products: state.products
       }),
     }
   )

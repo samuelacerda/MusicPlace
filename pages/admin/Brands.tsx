@@ -76,31 +76,33 @@ export const AdminBrands: React.FC = () => {
          </div>
 
          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table className="w-full text-left text-sm">
-               <thead className="bg-gray-50 border-b border-gray-200 text-gray-700">
-                  <tr>
-                     <th className="p-4">Nome</th>
-                     <th className="p-4">Descrição</th>
-                     <th className="p-4">Status</th>
-                     <th className="p-4 text-right">Ações</th>
-                  </tr>
-               </thead>
-               <tbody className="divide-y divide-gray-100">
-                  {brands.map(brand => (
-                     <tr key={brand.id} className="hover:bg-gray-50">
-                          <td className="p-4 font-medium text-gray-900 align-top">{brand.name}</td>
-                          <td className="p-4 text-gray-500 text-xs align-top max-w-xs">{brand.description}</td>
-                          <td className="p-4 align-top">
-                             {brand.active ? <span className="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Ativa</span> : <span className="text-red-600 text-xs font-bold bg-red-100 px-2 py-1 rounded-full">Inativa</span>}
-                          </td>
-                          <td className="p-4 text-right flex justify-end gap-2 align-top">
-                             <button onClick={() => handleEdit(brand)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit2 size={16}/></button>
-                             <button onClick={() => handleDelete(brand.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 size={16}/></button>
-                          </td>
-                       </tr>
-                  ))}
-               </tbody>
-            </table>
+            <div className="overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left text-sm min-w-[600px]">
+                <thead className="bg-gray-50 border-b border-gray-200 text-gray-700">
+                    <tr>
+                        <th className="p-4 whitespace-nowrap">Nome</th>
+                        <th className="p-4 whitespace-nowrap">Descrição</th>
+                        <th className="p-4 whitespace-nowrap">Status</th>
+                        <th className="p-4 text-right whitespace-nowrap">Ações</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                    {brands.map(brand => (
+                        <tr key={brand.id} className="hover:bg-gray-50">
+                            <td className="p-4 font-medium text-gray-900 align-top whitespace-nowrap">{brand.name}</td>
+                            <td className="p-4 text-gray-500 text-xs align-top max-w-xs truncate">{brand.description}</td>
+                            <td className="p-4 align-top whitespace-nowrap">
+                                {brand.active ? <span className="text-green-600 text-xs font-bold bg-green-100 px-2 py-1 rounded-full">Ativa</span> : <span className="text-red-600 text-xs font-bold bg-red-100 px-2 py-1 rounded-full">Inativa</span>}
+                            </td>
+                            <td className="p-4 text-right flex justify-end gap-2 align-top whitespace-nowrap">
+                                <button onClick={() => handleEdit(brand)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded border border-transparent hover:border-blue-100"><Edit2 size={16}/></button>
+                                <button onClick={() => handleDelete(brand.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded border border-transparent hover:border-red-100"><Trash2 size={16}/></button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
          </div>
       </div>
     </div>

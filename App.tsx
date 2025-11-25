@@ -17,8 +17,11 @@ import { WhatsAppButton } from './components/WhatsAppButton';
 import { AdminSetup } from './pages/AdminSetup';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
+import { Checkout } from './pages/Checkout';
+import { PlanCheckout } from './pages/PlanCheckout';
+import { PaymentSuccess } from './pages/PaymentSuccess';
 import { useAppStore } from './store/useAppStore';
-import { AuthListener } from './components/AuthListener'; // Import AuthListener
+import { AuthListener } from './components/AuthListener'; 
 
 // Admin Imports
 import { AdminLayout } from './pages/admin/AdminLayout';
@@ -42,6 +45,7 @@ import { Profile } from './pages/account/Profile';
 import { MyAds } from './pages/account/MyAds';
 import { Favorites } from './pages/account/Favorites';
 import { EditAd } from './pages/account/EditAd';
+import { Subscription } from './pages/account/Subscription';
 
 function App() {
   const { fetchData } = useAppStore();
@@ -52,7 +56,7 @@ function App() {
 
   return (
     <HashRouter>
-      <AuthListener /> {/* Global Auth Event Listener */}
+      <AuthListener /> {/* Intercepta links de e-mail do Supabase */}
       <WhatsAppButton />
       <Routes>
         {/* Secret Admin Setup Route */}
@@ -81,6 +85,9 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/busca" element={<SearchPage />} />
               <Route path="/produto/:id" element={<ProductDetails />} />
+              <Route path="/checkout/:id" element={<Checkout />} />
+              <Route path="/checkout-plano/:planId" element={<PlanCheckout />} />
+              <Route path="/sucesso" element={<PaymentSuccess />} />
               <Route path="/anunciar" element={<PostAd />} />
               <Route path="/servicos" element={<Services />} />
               <Route path="/blog" element={<BlogList />} />
@@ -94,6 +101,7 @@ function App() {
               
               {/* Account Routes - Wrapped in AccountLayout */}
               <Route path="/minha-conta/perfil" element={<AccountLayout><Profile /></AccountLayout>} />
+              <Route path="/minha-conta/assinatura" element={<AccountLayout><Subscription /></AccountLayout>} />
               <Route path="/minha-conta/anuncios" element={<AccountLayout><MyAds /></AccountLayout>} />
               <Route path="/minha-conta/editar/:id" element={<AccountLayout><EditAd /></AccountLayout>} />
               <Route path="/minha-conta/favoritos" element={<AccountLayout><Favorites /></AccountLayout>} />

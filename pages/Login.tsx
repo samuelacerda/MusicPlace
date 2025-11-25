@@ -24,8 +24,8 @@ export const Login: React.FC = () => {
       if (result.success) {
         navigate('/');
       } else {
-        if (result.error?.includes("Email not confirmed")) {
-             setError("Conta criada, mas pendente de confirmação. Verifique seu e-mail ou desative 'Confirm email' no painel do Supabase.");
+        if (result.error?.includes("Email not confirmed") || result.error?.includes("Email not verified")) {
+             setError("Conta criada, mas o e-mail ainda não foi confirmado.\n\nVerifique sua caixa de entrada ou desative a opção 'Confirm Email' no painel do Supabase (Authentication > Providers > Email).");
         } else {
              setError(result.error || 'E-mail ou senha inválidos.');
         }
@@ -46,7 +46,6 @@ export const Login: React.FC = () => {
     setAdminLoading(true);
     setError('');
     
-    // Novo e-mail para contornar o problema de e-mail não confirmado
     const adminEmail = 'admin.root@musicplace.com';
     const adminPass = 'Samuka4338';
 
@@ -69,17 +68,20 @@ export const Login: React.FC = () => {
             }
         });
 
+        // Caso especial: Usuário criado, mas sem sessão (E-mail Confirm ON)
+        if (authData.user && !authData.session) {
+             throw new Error("Usuário admin criado, mas o login foi bloqueado porque o Supabase exige confirmação de e-mail.\n\nSOLUÇÃO: Vá no painel do Supabase > Authentication > Providers > Email e desative 'Confirm email'. Depois tente novamente.");
+        }
+
         // Optimization: Se o signUp retornar sessão, usa direto (evita login duplo)
         if (authData.session) {
-             console.log("Usuário criado e logado com sucesso.");
              await login(adminEmail, adminPass);
-             alert(`Sucesso! Admin criado/logado.\nE-mail: ${adminEmail}\nSenha: ${adminPass}`);
+             alert(`Sucesso! Admin criado e logado.\nE-mail: ${adminEmail}\nSenha: ${adminPass}`);
              navigate('/');
              return;
         }
 
         if (authError) {
-            // Se o usuário já existe, tentamos apenas logar
             if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
                 console.log("Usuário já existe. Tentando logar...");
             } else {
@@ -87,13 +89,18 @@ export const Login: React.FC = () => {
             }
         }
 
-        // 2. Tenta Logar (Fallback)
+        // 2. Tenta Logar (Fallback se já existia ou erro de sign up ignorado)
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
             email: adminEmail,
             password: adminPass
         });
 
-        if (loginError) throw loginError;
+        if (loginError) {
+             if (loginError.message.includes("Email not confirmed")) {
+                 throw new Error("A conta existe, mas está pendente de confirmação de e-mail.\n\nVá no painel do Supabase > Authentication > Providers > Email e desative 'Confirm email'.");
+             }
+             throw loginError;
+        }
 
         // 3. Garante que o Perfil existe e é Admin (Força Bruta via Upsert)
         if (loginData.user) {
@@ -111,18 +118,17 @@ export const Login: React.FC = () => {
             
             if (profileError) {
                 console.error("Erro ao atualizar perfil:", profileError);
-                // Não interrompe o fluxo, pois o trigger pode ter funcionado
             }
         }
 
         // 4. Atualiza estado local através do login da store
         await login(adminEmail, adminPass);
-        alert(`Sucesso! Admin criado/logado.\nE-mail: ${adminEmail}\nSenha: ${adminPass}`);
+        alert(`Sucesso! Admin logado.\nE-mail: ${adminEmail}\nSenha: ${adminPass}`);
         navigate('/');
 
     } catch (e: any) {
         console.error(e);
-        setError('Erro crítico ao criar Admin: ' + e.message);
+        setError('Atenção: ' + e.message);
     } finally {
         setAdminLoading(false);
     }
@@ -202,7 +208,7 @@ export const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Botão de Resgate para Configuração Inicial (Pode ser removido em produção) */}
+        {/* Botão de Resgate para Configuração Inicial */}
         <div className="mt-8 pt-6 border-t border-gray-100">
             <button 
                 onClick={handleForceCreateAdmin}

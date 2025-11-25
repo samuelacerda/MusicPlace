@@ -1,13 +1,16 @@
 
+
+
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Save, Globe, CreditCard, Shield, Server, RotateCcw, Mail, MessageSquare, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Save, Globe, CreditCard, Shield, Server, RotateCcw, Mail, MessageSquare, Send, CheckCircle, AlertCircle, Bot, Eye, EyeOff, Lock, QrCode } from 'lucide-react';
 import { EmailConfig, WhatsappConfig } from '../../types';
 
 export const AdminSettings: React.FC = () => {
   const { systemSettings, updateSystemSettings, logs, sendAdminEmail, users } = useAppStore();
   const [activeTab, setActiveTab] = useState<'general' | 'communication' | 'payment' | 'system'>('general');
   const [formData, setFormData] = useState(systemSettings);
+  const [showToken, setShowToken] = useState(false);
 
   // Email Sending Tool State
   const [emailTool, setEmailTool] = useState({
@@ -49,6 +52,15 @@ export const AdminSettings: React.FC = () => {
           whatsappConfig: { ...formData.whatsappConfig, [key]: value }
       });
   };
+
+  // Helper to check if MP keys look like production
+  const getKeyStatus = (key: string) => {
+      if (!key) return 'empty';
+      if (key.startsWith('TEST-')) return 'test';
+      return 'production';
+  };
+
+  const mpStatus = getKeyStatus(formData.mercadoPagoPublicKey || '');
 
   return (
     <div className="max-w-6xl pb-20">
@@ -152,7 +164,13 @@ export const AdminSettings: React.FC = () => {
                         </div>
 
                         <div className="md:col-span-2 border-t border-gray-200 pt-4 mt-2">
-                             <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2"><Server size={16}/> Servidor SMTP (Gmail Workspace / Outros)</h4>
+                             <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2"><Server size={16}/> Servidor SMTP (Gmail / Workspace)</h4>
+                             
+                             <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-100 mb-4 text-sm text-yellow-800">
+                                <p className="font-bold flex items-center gap-2"><AlertCircle size={14}/> Atenção para usuários Gmail:</p>
+                                <p className="mt-1">Não use sua senha normal de login! Você deve gerar uma <strong>"Senha de App"</strong> nas configurações de segurança da sua conta Google.</p>
+                             </div>
+
                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Host SMTP</label>
@@ -171,13 +189,12 @@ export const AdminSettings: React.FC = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Usuário SMTP</label>
-                                    <input type="text" value={formData.emailConfig.smtpUser} onChange={e => updateEmailConfig('smtpUser', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Usuário SMTP (Seu E-mail)</label>
+                                    <input type="text" value={formData.emailConfig.smtpUser} onChange={e => updateEmailConfig('smtpUser', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" placeholder="seu.email@gmail.com" />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Senha (App Password)</label>
-                                    <input type="password" value={formData.emailConfig.smtpPass} onChange={e => updateEmailConfig('smtpPass', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" placeholder="••••••••" />
-                                    <p className="text-[10px] text-gray-500 mt-1">Recomendado usar Senha de App se utilizar Google Workspace.</p>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Senha de App (App Password)</label>
+                                    <input type="password" value={formData.emailConfig.smtpPass} onChange={e => updateEmailConfig('smtpPass', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" placeholder="xxxx xxxx xxxx xxxx" />
                                 </div>
                              </div>
                         </div>
@@ -190,40 +207,68 @@ export const AdminSettings: React.FC = () => {
                     </div>
                 </section>
 
-                {/* WhatsApp Config */}
+                {/* WhatsApp & Bot Config */}
                 <section className="border-t border-gray-200 pt-8">
                     <div className="flex items-center gap-2 mb-6">
                         <div className="p-2 bg-green-100 text-green-600 rounded-lg"><MessageSquare size={20} /></div>
                         <h3 className="text-xl font-bold text-gray-900">WhatsApp & Atendimento</h3>
                     </div>
 
-                     <div className="bg-green-50 p-6 rounded-xl border border-green-200 space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h4 className="font-bold text-green-900">Botão Flutuante e Integração</h4>
+                     <div className="bg-green-50 p-6 rounded-xl border border-green-200 space-y-6">
+                        
+                        {/* Enable Toggle */}
+                        <div className="flex items-center justify-between border-b border-green-200 pb-4">
+                            <div>
+                                <h4 className="font-bold text-green-900">Botão Flutuante</h4>
+                                <p className="text-xs text-green-700">Exibe o ícone do WhatsApp no canto do site.</p>
+                            </div>
                             <label className="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" checked={formData.whatsappConfig.enabled} onChange={(e) => updateWhatsappConfig('enabled', e.target.checked)} className="sr-only peer" />
                                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                             </label>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Número Oficial (Atendimento Humano)</label>
-                                <input type="text" value={formData.whatsappConfig.humanAgentNumber} onChange={e => updateWhatsappConfig('humanAgentNumber', e.target.value)} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" placeholder="5511999999999" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID do Robô / API Token</label>
-                                <input type="text" value={formData.whatsappConfig.botId} onChange={e => updateWhatsappConfig('botId', e.target.value)} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Mensagem de Boas-vindas (Automática)</label>
-                                <input type="text" value={formData.whatsappConfig.welcomeMessage} onChange={e => updateWhatsappConfig('welcomeMessage', e.target.value)} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Tempo de Espera p/ Humano (min)</label>
-                                <input type="number" value={formData.whatsappConfig.humanTimeoutMinutes} onChange={e => updateWhatsappConfig('humanTimeoutMinutes', parseInt(e.target.value))} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" />
+                        {/* Human Support */}
+                        <div>
+                            <h4 className="font-bold text-green-900 mb-3">Atendimento Humano (Teste)</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Número Oficial / Teste</label>
+                                    <input type="text" value={formData.whatsappConfig.humanAgentNumber} onChange={e => updateWhatsappConfig('humanAgentNumber', e.target.value)} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" placeholder="5511999999999" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Tempo de Espera p/ Humano (min)</label>
+                                    <input type="number" value={formData.whatsappConfig.humanTimeoutMinutes} onChange={e => updateWhatsappConfig('humanTimeoutMinutes', parseInt(e.target.value))} className="w-full p-2 border border-green-200 rounded bg-white text-gray-900" />
+                                </div>
                             </div>
                         </div>
+
+                        {/* Virtual Assistant Bot */}
+                        <div className="bg-white p-4 rounded-lg border border-green-100">
+                            <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                <Bot size={18} className="text-brand-600"/> 
+                                Configuração do Assistente Virtual
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Provedor do Robô</label>
+                                    <select value={formData.whatsappConfig.botProvider || 'Typebot'} onChange={e => updateWhatsappConfig('botProvider', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900">
+                                        <option value="Typebot">Typebot.io</option>
+                                        <option value="Dialogflow">Google Dialogflow</option>
+                                        <option value="Custom">API Própria</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID do Robô / API Token</label>
+                                    <input type="text" value={formData.whatsappConfig.botId} onChange={e => updateWhatsappConfig('botId', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" placeholder="Cole o ID aqui..." />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Mensagem de Boas-vindas</label>
+                                    <input type="text" value={formData.whatsappConfig.welcomeMessage} onChange={e => updateWhatsappConfig('welcomeMessage', e.target.value)} className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900" />
+                                </div>
+                            </div>
+                        </div>
+
                      </div>
                 </section>
 
@@ -271,6 +316,21 @@ export const AdminSettings: React.FC = () => {
           {activeTab === 'payment' && (
              <div className="space-y-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Gateway de Pagamento</h3>
+                
+                {mpStatus === 'production' && (
+                    <div className="bg-green-50 text-green-800 p-4 rounded-lg border border-green-200 flex items-center gap-2 mb-4">
+                        <CheckCircle size={20} /> 
+                        <span className="font-bold">Modo Produção Ativo:</span> O sistema está processando pagamentos reais.
+                    </div>
+                )}
+                
+                {mpStatus === 'test' && (
+                    <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-200 flex items-center gap-2 mb-4">
+                        <Shield size={20} /> 
+                        <span className="font-bold">Modo Sandbox (Teste):</span> Use cartões de teste para validar o fluxo.
+                    </div>
+                )}
+
                 <div>
                    <label className="block font-medium text-gray-900 mb-2">Provedor Principal</label>
                    <select 
@@ -289,11 +349,44 @@ export const AdminSettings: React.FC = () => {
                       <h4 className="font-bold text-blue-900">Credenciais Mercado Pago</h4>
                       <div>
                          <label className="block text-xs font-bold text-blue-800 mb-1">Public Key</label>
-                         <input type="text" className="w-full p-2 border border-blue-200 rounded bg-white text-gray-900" value={formData.mercadoPagoPublicKey || ''} onChange={(e) => setFormData({...formData, mercadoPagoPublicKey: e.target.value})} />
+                         <input type="text" className="w-full p-2 border border-blue-200 rounded bg-white text-gray-900 font-mono" value={formData.mercadoPagoPublicKey || ''} onChange={(e) => setFormData({...formData, mercadoPagoPublicKey: e.target.value})} placeholder="APP_USR-..." />
+                         <p className="text-[10px] text-blue-600 mt-1">Para produção, use a chave que começa com APP_USR-. Para teste, use TEST-.</p>
                       </div>
                       <div>
                          <label className="block text-xs font-bold text-blue-800 mb-1">Access Token</label>
-                         <input type="password" className="w-full p-2 border border-blue-200 rounded bg-white text-gray-900" value={formData.mercadoPagoAccessToken || ''} onChange={(e) => setFormData({...formData, mercadoPagoAccessToken: e.target.value})} />
+                         <div className="relative">
+                            <input 
+                                type={showToken ? "text" : "password"} 
+                                className="w-full p-2 pr-10 border border-blue-200 rounded bg-white text-gray-900 font-mono" 
+                                value={formData.mercadoPagoAccessToken || ''} 
+                                onChange={(e) => setFormData({...formData, mercadoPagoAccessToken: e.target.value})} 
+                                placeholder="APP_USR-..."
+                            />
+                            <button 
+                                type="button"
+                                onClick={() => setShowToken(!showToken)}
+                                className="absolute right-2 top-2.5 text-blue-400 hover:text-blue-600"
+                            >
+                                {showToken ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                         </div>
+                      </div>
+                      
+                      {/* PIX Key Input */}
+                      <div className="pt-4 border-t border-blue-200 mt-4">
+                         <label className="block text-xs font-bold text-blue-800 mb-1 flex items-center gap-1">
+                            <QrCode size={14} /> Chave PIX (Para Recebimento)
+                         </label>
+                         <input 
+                            type="text" 
+                            className="w-full p-2 border border-blue-200 rounded bg-white text-gray-900 font-mono" 
+                            value={formData.mercadoPagoPixKey || ''} 
+                            onChange={(e) => setFormData({...formData, mercadoPagoPixKey: e.target.value})} 
+                            placeholder="CPF, CNPJ, E-mail ou Chave Aleatória" 
+                         />
+                         <p className="text-[10px] text-blue-600 mt-1">
+                            Insira sua chave PIX cadastrada no Mercado Pago. O sistema gerará QR Codes apontando para esta chave.
+                         </p>
                       </div>
                    </div>
                 )}

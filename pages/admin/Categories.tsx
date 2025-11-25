@@ -200,11 +200,11 @@ export const AdminCategories: React.FC = () => {
               className="bg-red-100 text-red-600 px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-red-200 transition"
               title="Apagar todas as categorias"
             >
-              <Trash2 size={18} /> Excluir Todas
+              <Trash2 size={18} /> <span className="hidden md:inline">Excluir Todas</span>
             </button>
           )}
           <button onClick={handleCreate} className="bg-brand-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-700">
-            <Plus size={18} /> Nova Categoria
+            <Plus size={18} /> <span className="hidden md:inline">Nova Categoria</span>
           </button>
         </div>
       </div>
@@ -218,24 +218,30 @@ export const AdminCategories: React.FC = () => {
         {categories.map(cat => (
           <div key={cat.id} className="border-b border-gray-100 last:border-none">
             <div className={`flex items-center justify-between p-4 hover:bg-gray-50 ${!cat.active ? 'opacity-60' : ''}`}>
-               <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => setExpandedId(expandedId === cat.id ? null : cat.id)}>
+               {/* Content Area */}
+               <div className="flex items-center gap-3 flex-1 cursor-pointer min-w-0" onClick={() => setExpandedId(expandedId === cat.id ? null : cat.id)}>
                  {cat.image ? (
-                   <img src={cat.image} alt={cat.name} className="w-16 h-10 rounded-md object-cover border border-gray-200" />
+                   <img src={cat.image} alt={cat.name} className="w-12 h-8 md:w-16 md:h-10 rounded-md object-cover border border-gray-200 flex-shrink-0" />
                  ) : (
-                   <div className="p-2 bg-brand-50 text-brand-600 rounded-lg">
+                   <div className="p-2 bg-brand-50 text-brand-600 rounded-lg flex-shrink-0">
                       <Layers size={20} />
                    </div>
                  )}
-                 <span className="font-bold text-gray-900">{cat.name}</span>
-                 <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">{cat.subcategories.length} subcategorias</span>
-                 {!cat.active && <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">Inativa</span>}
+                 <div className="flex flex-col md:flex-row md:items-center md:gap-3 min-w-0">
+                    <span className="font-bold text-gray-900 truncate">{cat.name}</span>
+                    <div className="flex gap-2 mt-1 md:mt-0">
+                        <span className="text-[10px] md:text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full whitespace-nowrap">{cat.subcategories.length} sub</span>
+                        {!cat.active && <span className="text-[10px] md:text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold whitespace-nowrap">Inativa</span>}
+                    </div>
+                 </div>
                </div>
                
-               <div className="flex items-center gap-3 relative z-10">
+               {/* Actions Area */}
+               <div className="flex items-center gap-2 md:gap-3 relative z-10 flex-shrink-0 ml-2">
                  <button 
                     type="button"
                     onClick={(e) => { e.stopPropagation(); handleEdit(cat); }} 
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full border border-transparent hover:border-blue-100"
                     title="Editar"
                  >
                     <Edit2 size={18}/>
@@ -243,7 +249,7 @@ export const AdminCategories: React.FC = () => {
                  <button 
                     type="button"
                     onClick={(e) => { e.stopPropagation(); handleDelete(cat.id); }} 
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full border border-transparent hover:border-red-100"
                     title="Excluir"
                  >
                     <Trash2 size={18}/>
@@ -260,9 +266,9 @@ export const AdminCategories: React.FC = () => {
             </div>
             
             {expandedId === cat.id && (
-              <div className="bg-gray-50 p-4 pl-16 border-t border-gray-100">
+              <div className="bg-gray-50 p-4 md:pl-16 border-t border-gray-100 animate-fadeIn">
                  <p className="text-xs font-bold text-gray-500 uppercase mb-2">Subcategorias</p>
-                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                    {cat.subcategories.map((sub, idx) => (
                      <div key={idx} className="text-sm text-gray-600 bg-white p-2 rounded border border-gray-200">
                        {sub}

@@ -269,6 +269,7 @@ export interface EmailConfig {
 
 export interface WhatsappConfig {
   officialNumber: string;
+  botProvider: string; // e.g., 'Typebot', 'Dialogflow', 'Custom'
   botId: string;
   welcomeMessage: string;
   humanTimeoutMinutes: number;
@@ -302,6 +303,7 @@ export interface SystemSettings {
   paymentGateway: 'mercadopago' | 'stripe' | 'pix_manual';
   mercadoPagoPublicKey?: string;
   mercadoPagoAccessToken?: string;
+  mercadoPagoPixKey?: string; // Nova Chave PIX
   recurringPayments: boolean;
   extraFeesPercentage: number;
   

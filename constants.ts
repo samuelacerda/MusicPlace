@@ -200,7 +200,7 @@ export const SEED_BRANDS: Brand[] = [
   { id: 'b19', name: 'Michael', description: 'Violão, Guitarra, Baixo, Instrumentos de Sopro', active: true },
   { id: 'b20', name: 'Dean Guitars', description: 'Guitarra Elétrica, Baixo Elétrico', active: true },
   { id: 'b21', name: 'Seagull', description: 'Violão Acústico', active: true },
-  { id: 'b22', name: "D'Addario", description: 'Cordas, Acessórios', active: true },
+  { id: 'b22', name: 'D\'Addario', description: 'Cordas, Acessórios', active: true },
   { id: 'b23', name: 'Ernie Ball', description: 'Cordas, Pedais de Volume, Acessórios', active: true },
 
   // Amplificadores, Pedais e Efeitos
@@ -565,24 +565,25 @@ export const SEED_DATABASE = {
     maintenanceMessage: 'Estamos em manutenção para melhorar sua experiência. Voltamos logo!',
     bannerRotationInterval: 5,
     
-    // New Settings
+    // New Settings - DEFAULT FOR GMAIL & TEST WHATSAPP
     emailConfig: {
-       supportEmail: 'suporte@musicplace.com.br',
-       contactEmail: 'contato@musicplace.com.br',
+       supportEmail: 'suporte@musicplace.com',
+       contactEmail: 'contato@musicplace.com',
        senderName: 'Equipe MusicPlace',
        smtpHost: 'smtp.gmail.com',
        smtpPort: 465,
        smtpUser: '',
        smtpPass: '',
        encryption: 'ssl',
-       replyTo: 'no-reply@musicplace.com.br'
+       replyTo: 'no-reply@musicplace.com'
     },
     whatsappConfig: {
        officialNumber: '',
+       botProvider: 'Typebot',
        botId: '',
        welcomeMessage: 'Olá! Bem-vindo ao MusicPlace. Como posso ajudar?',
        humanTimeoutMinutes: 1,
-       humanAgentNumber: '',
+       humanAgentNumber: '5511999999999', // Place holder for test
        enabled: true
     },
 
@@ -593,6 +594,11 @@ export const SEED_DATABASE = {
     sellCtaImage: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=1920&auto=format&fit=crop',
 
     paymentGateway: 'mercadopago',
+    // --- CONFIGURAÇÃO DE PAGAMENTO ---
+    // Deixe vazio por padrão. O Admin deve configurar isso no painel.
+    mercadoPagoPublicKey: '', 
+    mercadoPagoAccessToken: '',
+    // ------------------------------------------
     recurringPayments: true,
     extraFeesPercentage: 0,
     uploadLimitMB: 5,

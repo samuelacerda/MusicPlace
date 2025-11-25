@@ -87,7 +87,7 @@ export const AdminBlog: React.FC = () => {
                <textarea required className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 h-20" value={formData.subtitle} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
                   <input type="text" required className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} placeholder="Ex: Notícias, Dicas, Reviews" />
@@ -168,50 +168,52 @@ export const AdminBlog: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full text-left text-sm">
-           <thead className="bg-gray-50 border-b border-gray-200 text-gray-700">
-              <tr>
-                 <th className="p-4">Post</th>
-                 <th className="p-4">Categoria</th>
-                 <th className="p-4">Data</th>
-                 <th className="p-4 text-center">Destaque</th>
-                 <th className="p-4 text-right">Ações</th>
-              </tr>
-           </thead>
-           <tbody className="divide-y divide-gray-100">
-              {filteredPosts.length === 0 ? (
-                 <tr><td colSpan={5} className="p-8 text-center text-gray-500">Nenhum post encontrado.</td></tr>
-              ) : (
-                filteredPosts.map(post => (
-                  <tr key={post.id} className="hover:bg-gray-50">
-                      <td className="p-4">
-                         <div className="flex items-center gap-3">
-                            <img src={post.image} alt="" className="w-12 h-12 rounded-lg object-cover bg-gray-100" />
-                            <div>
-                               <div className="font-bold text-gray-900">{post.title}</div>
-                               <div className="text-xs text-gray-500">{post.author}</div>
+        <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left text-sm min-w-[800px]">
+            <thead className="bg-gray-50 border-b border-gray-200 text-gray-700">
+                <tr>
+                    <th className="p-4 whitespace-nowrap">Post</th>
+                    <th className="p-4 whitespace-nowrap">Categoria</th>
+                    <th className="p-4 whitespace-nowrap">Data</th>
+                    <th className="p-4 text-center whitespace-nowrap">Destaque</th>
+                    <th className="p-4 text-right whitespace-nowrap">Ações</th>
+                </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+                {filteredPosts.length === 0 ? (
+                    <tr><td colSpan={5} className="p-8 text-center text-gray-500">Nenhum post encontrado.</td></tr>
+                ) : (
+                    filteredPosts.map(post => (
+                    <tr key={post.id} className="hover:bg-gray-50">
+                        <td className="p-4">
+                            <div className="flex items-center gap-3">
+                                <img src={post.image} alt="" className="w-12 h-12 rounded-lg object-cover bg-gray-100 border border-gray-200" />
+                                <div>
+                                <div className="font-bold text-gray-900 line-clamp-1 max-w-xs">{post.title}</div>
+                                <div className="text-xs text-gray-500">{post.author}</div>
+                                </div>
                             </div>
-                         </div>
-                      </td>
-                      <td className="p-4"><span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold">{post.category}</span></td>
-                      <td className="p-4 text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</td>
-                      <td className="p-4 text-center">
-                         <button 
-                           onClick={() => toggleBlogPostFeatured(post.id)}
-                           className={`p-2 rounded-full transition ${post.featured ? 'text-yellow-500 hover:bg-yellow-50' : 'text-gray-300 hover:text-yellow-400'}`}
-                         >
-                            <Star size={20} fill={post.featured ? "currentColor" : "none"} />
-                         </button>
-                      </td>
-                      <td className="p-4 text-right flex justify-end gap-2 items-center h-full">
-                          <button onClick={() => handleEdit(post)} className="p-2 text-blue-600 hover:bg-blue-50 rounded"><Edit2 size={16}/></button>
-                          <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 size={16}/></button>
-                      </td>
-                  </tr>
-                ))
-              )}
-           </tbody>
-        </table>
+                        </td>
+                        <td className="p-4"><span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">{post.category}</span></td>
+                        <td className="p-4 text-gray-500 whitespace-nowrap">{new Date(post.createdAt).toLocaleDateString()}</td>
+                        <td className="p-4 text-center">
+                            <button 
+                            onClick={() => toggleBlogPostFeatured(post.id)}
+                            className={`p-2 rounded-full transition ${post.featured ? 'text-yellow-500 hover:bg-yellow-50' : 'text-gray-300 hover:text-yellow-400'}`}
+                            >
+                                <Star size={20} fill={post.featured ? "currentColor" : "none"} />
+                            </button>
+                        </td>
+                        <td className="p-4 text-right flex justify-end gap-2 items-center h-full">
+                            <button onClick={() => handleEdit(post)} className="p-2 text-blue-600 hover:bg-blue-50 rounded border border-transparent hover:border-blue-100"><Edit2 size={16}/></button>
+                            <button onClick={() => handleDelete(post.id)} className="p-2 text-red-600 hover:bg-red-50 rounded border border-transparent hover:border-red-100"><Trash2 size={16}/></button>
+                        </td>
+                    </tr>
+                    ))
+                )}
+            </tbody>
+            </table>
+        </div>
       </div>
     </div>
   );

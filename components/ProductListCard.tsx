@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, MessageCircle } from 'lucide-react';
-import { Product, DeliveryMethod } from '../types';
+import { Heart, MapPin, MessageCircle, ImageOff } from 'lucide-react';
+import { Product } from '../types';
 import { useAppStore } from '../store/useAppStore';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const ProductListCard: React.FC<Props> = ({ product }) => {
-  const { favorites, toggleFavorite, theme } = useAppStore();
+  const { favorites, toggleFavorite } = useAppStore();
   const isFav = favorites.includes(product.id);
 
   const handleWhatsappClick = (e: React.MouseEvent) => {
@@ -20,18 +20,29 @@ export const ProductListCard: React.FC<Props> = ({ product }) => {
     window.open(url, '_blank');
   };
 
+  const hasImages = Array.isArray(product.images) && product.images.length > 0;
+  const displayImage = hasImages ? product.images[0] : null;
+
   return (
     <div 
       className="bg-white border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 group relative flex flex-row rounded-lg h-40 md:h-48"
     >
       {/* Image Section */}
       <Link to={`/produto/${product.id}`} className="relative w-2/5 md:w-1/3">
-        <div className="h-full w-full bg-gray-100 relative overflow-hidden">
-          <img 
-            src={product.images[0]} 
-            alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+        <div className="h-full w-full bg-gray-100 relative overflow-hidden flex items-center justify-center">
+          {displayImage ? (
+            <img 
+              src={displayImage} 
+              alt={product.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="text-gray-400 flex flex-col items-center">
+               <ImageOff size={24} />
+               <span className="text-[10px] mt-1">Sem Foto</span>
+            </div>
+          )}
+          
           {product.featured && (
             <span className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">
               Destaque

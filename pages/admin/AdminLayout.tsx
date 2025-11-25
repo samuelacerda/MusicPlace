@@ -1,13 +1,14 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ShoppingBag, LogOut, Music, AlertOctagon, Image, Layers, Tag, Ticket, CreditCard, Settings, Palette, FileText, Megaphone, ArrowLeftCircle, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingBag, LogOut, Music, AlertOctagon, Image, Layers, Tag, Ticket, CreditCard, Settings, Palette, FileText, Megaphone, ArrowLeftCircle, BookOpen, Menu, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { logout, currentUser } = useAppStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Prevent navigation in useEffect, but handled inside component is safer for initial check
@@ -16,6 +17,11 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
        // but here we can just perform the check.
     }
   }, [currentUser]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // Route Guard
   if (!currentUser || currentUser.role !== 'admin') {
@@ -31,10 +37,35 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const isActive = (path: string) => location.pathname === path ? 'bg-brand-600 text-white' : 'text-gray-400 hover:bg-gray-900 hover:text-white';
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
+      
+      {/* Mobile Header for Admin */}
+      <div className="md:hidden bg-black text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+          <div className="flex items-center gap-2">
+             <div className="bg-brand-500 p-1.5 rounded-lg">
+                <Music className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-bold text-white tracking-tight">
+                Music<span className="text-brand-500">Admin</span>
+              </span>
+          </div>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-300 hover:text-white">
+             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+      </div>
+
+      {/* Overlay for Mobile */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-black text-white flex flex-col fixed h-full z-50 overflow-y-auto custom-scrollbar">
-         <div className="p-6 flex items-center gap-2 border-b border-gray-800">
+      <aside className={`
+        w-64 bg-black text-white flex flex-col fixed h-full z-50 overflow-y-auto custom-scrollbar transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0 md:static md:h-screen
+      `}>
+         <div className="p-6 flex items-center gap-2 border-b border-gray-800 hidden md:flex">
              <div className="bg-brand-500 p-1.5 rounded-lg">
                 <Music className="h-5 w-5 text-white" />
               </div>
@@ -131,7 +162,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       </aside>
 
       {/* Content */}
-      <main className="flex-1 ml-64 p-8 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full md:w-auto">
         {children}
       </main>
     </div>

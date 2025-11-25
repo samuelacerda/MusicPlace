@@ -10,26 +10,28 @@ export const AuthListener: React.FC = () => {
   useEffect(() => {
     if (!supabase) return;
 
-    // 1. Verificação Manual de Hash (Correção para HashRouter)
-    // O Supabase envia: domain.com/#access_token=...&type=recovery
-    // O HashRouter acha que a rota é "/access_token=..." e falha, indo para Home.
-    // Aqui interceptamos isso manualmente.
-    const hash = window.location.hash;
-    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
-        console.log("Token de recuperação detectado na URL. Redirecionando para redefinição...");
-        // Pequeno delay para garantir que o Supabase Client processe o token da URL
-        setTimeout(() => {
-            navigate('/redefinir-senha');
-        }, 500);
-    }
-
-    // 2. Listener Padrão do Supabase
+    // 1. Listener de Eventos do Supabase
+    // Este é o método mais confiável. Quando o usuário clica no link de e-mail,
+    // o Supabase detecta o token e dispara este evento.
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
-        console.log("Evento Supabase: PASSWORD_RECOVERY");
-        navigate('/redefinir-senha');
+        console.log("Evento Supabase: PASSWORD_RECOVERY detectado.");
+        // Força a navegação para a tela de redefinição
+        navigate('/redefinir-senha', { replace: true });
       }
     });
+
+    // 2. Verificação Manual de Hash (Fallback para HashRouter)
+    // Às vezes o HashRouter sobrescreve a URL antes do evento disparar.
+    // Se detectarmos os parâmetros de recuperação na URL bruta, forçamos o redirecionamento.
+    const hash = window.location.hash;
+    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
+        console.log("Hash de recuperação detectado na URL. Redirecionando...");
+        // Pequeno delay para garantir que o cliente Supabase processe o token internamente
+        setTimeout(() => {
+            navigate('/redefinir-senha', { replace: true });
+        }, 100);
+    }
 
     return () => {
       authListener.subscription.unsubscribe();

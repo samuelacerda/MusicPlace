@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { User, ShoppingBag, Heart, MessageSquare, Bell, LogOut, Settings, ChevronRight } from 'lucide-react';
+import { User, ShoppingBag, Heart, MessageSquare, Bell, LogOut, Settings, ChevronRight, CreditCard } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 
 export const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -26,6 +26,7 @@ export const AccountLayout: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const menuItems = [
     { icon: <User size={20} />, label: 'Meu Perfil', path: '/minha-conta/perfil' },
+    { icon: <CreditCard size={20} />, label: 'Minha Assinatura', path: '/minha-conta/assinatura' },
     { icon: <ShoppingBag size={20} />, label: 'Meus Anúncios', path: '/minha-conta/anuncios' },
     { icon: <Heart size={20} />, label: 'Favoritos', path: '/minha-conta/favoritos' },
     { icon: <MessageSquare size={20} />, label: 'Mensagens', path: '/minha-conta/mensagens' },

@@ -34,14 +34,16 @@ export const ForgotPassword: React.FC = () => {
       return (
         <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gray-50">
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100 text-center">
-                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                     <CheckCircle size={32} />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Verifique seu e-mail</h1>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">E-mail Enviado!</h1>
                 <p className="text-gray-500 mb-6">
-                    Enviamos um link de recuperação para <strong>{email}</strong>. 
-                    Clique no link para redefinir sua senha.
+                    Se o e-mail <strong>{email}</strong> estiver cadastrado, você receberá um link de recuperação em instantes.
                 </p>
+                <div className="bg-blue-50 text-blue-700 text-sm p-4 rounded-lg mb-6">
+                    Não esqueça de verificar sua caixa de <strong>Spam</strong> ou Lixo Eletrônico.
+                </div>
                 <Link to="/login" className="text-brand-600 font-bold hover:underline flex items-center justify-center gap-2">
                     <ArrowLeft size={16} /> Voltar para o Login
                 </Link>

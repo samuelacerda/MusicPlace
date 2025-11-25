@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Truck, RefreshCcw, MessageCircle } from 'lucide-react';
+import { Heart, MapPin, Truck, RefreshCcw, MessageCircle, ImageOff } from 'lucide-react';
 import { Product, DeliveryMethod } from '../types';
 import { useAppStore } from '../store/useAppStore';
 
@@ -20,17 +20,28 @@ export const ProductCard: React.FC<Props> = ({ product }) => {
     window.open(url, '_blank');
   };
 
+  const hasImages = Array.isArray(product.images) && product.images.length > 0;
+  const displayImage = hasImages ? product.images[0] : null;
+
   return (
     <div 
       className="bg-white border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group relative h-full flex flex-col rounded-xl"
     >
       <Link to={`/produto/${product.id}`} className="relative">
-        <div className="aspect-[4/3] overflow-hidden relative bg-gray-100">
-          <img 
-            src={product.images[0]} 
-            alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+        <div className="aspect-[4/3] overflow-hidden relative bg-gray-100 flex items-center justify-center">
+          {displayImage ? (
+            <img 
+              src={displayImage} 
+              alt={product.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="text-gray-400 flex flex-col items-center">
+               <ImageOff size={32} />
+               <span className="text-xs mt-1">Sem Foto</span>
+            </div>
+          )}
+          
           {product.featured && (
             <span className="absolute top-2 left-2 text-white text-xs font-bold px-2 py-1 rounded-md uppercase shadow-sm" style={{ backgroundColor: theme.primaryColor }}>
               Destaque

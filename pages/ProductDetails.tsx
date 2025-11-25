@@ -1,18 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MapPin, Share2, Heart, MessageCircle, ShieldCheck, Truck, Star, CheckCircle, RefreshCcw, DollarSign, ArrowLeft, Calendar } from 'lucide-react';
+import { MapPin, Share2, Heart, MessageCircle, ShieldCheck, Truck, Star, DollarSign, ArrowLeft, Calendar, ShoppingBag, RefreshCcw, ImageOff } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { DeliveryMethod } from '../types';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, currentUser, toggleFavorite, favorites, theme, addToRecentlyViewed } = useAppStore();
+  const { products, toggleFavorite, favorites, addToRecentlyViewed, theme } = useAppStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const product = products.find(p => p.id === id);
   const isFav = product ? favorites.includes(product.id) : false;
+
+  // Reset active image when product changes
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [id]);
 
   // Register view in history
   useEffect(() => {
@@ -35,6 +39,10 @@ export const ProductDetails: React.FC = () => {
       </div>
     );
   }
+
+  const hasImages = Array.isArray(product.images) && product.images.length > 0;
+  // Safe image access with fallback
+  const currentImage = hasImages ? (product.images[activeImageIndex] || product.images[0]) : null;
 
   const handleWhatsappClick = () => {
     const message = `Olá! Vi seu anúncio "${product.title}" no MusicPlace e gostaria de saber mais.`;
@@ -76,12 +84,20 @@ export const ProductDetails: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Left Column: Images */}
         <div className="space-y-4">
-          <div className="aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 relative group">
-            <img 
-              src={product.images[activeImageIndex]} 
-              alt={product.title} 
-              className="w-full h-full object-cover"
-            />
+          <div className="aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 relative group flex items-center justify-center">
+            {currentImage ? (
+              <img 
+                src={currentImage} 
+                alt={product.title} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="text-gray-400 flex flex-col items-center">
+                <ImageOff size={48} />
+                <span className="text-sm mt-2">Sem imagem</span>
+              </div>
+            )}
+            
             <div className="absolute top-4 right-4 flex gap-2">
                <button 
                 onClick={handleShare}
@@ -106,7 +122,7 @@ export const ProductDetails: React.FC = () => {
           </div>
 
           {/* Thumbnails */}
-          {product.images.length > 1 && (
+          {hasImages && product.images.length > 1 && (
             <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
               {product.images.map((img, idx) => (
                 <button
@@ -176,13 +192,27 @@ export const ProductDetails: React.FC = () => {
                  )}
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
+                 {product.status === 'active' ? (
+                    <Link 
+                        to={`/checkout/${product.id}`}
+                        className="flex-1 bg-brand-600 text-white font-bold py-3.5 rounded-xl hover:bg-brand-700 transition shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2"
+                    >
+                        <ShoppingBag size={20} />
+                        Comprar Agora
+                    </Link>
+                 ) : (
+                    <button disabled className="flex-1 bg-gray-300 text-gray-500 font-bold py-3.5 rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
+                        {product.status === 'sold' ? 'Vendido' : 'Indisponível'}
+                    </button>
+                 )}
+                 
                  <button 
                    onClick={handleWhatsappClick}
                    className="flex-1 bg-green-600 text-white font-bold py-3.5 rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
                  >
                     <MessageCircle size={20} />
-                    Conversar no WhatsApp
+                    Conversar
                  </button>
               </div>
            </div>

@@ -1,8 +1,7 @@
 
-
 import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Check, X, ExternalLink, Plus, Camera, Trash2, AlertCircle } from 'lucide-react';
+import { Check, X, ExternalLink, Plus, Camera, Trash2, AlertCircle, ImageOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Product, Condition, DeliveryMethod } from '../../types';
 import { STATES } from '../../constants';
@@ -35,7 +34,7 @@ export const AdminListings: React.FC = () => {
   const [customBrand, setCustomBrand] = useState('');
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
-  // --- INTELLIGENT CATEGORY FILTERING (Mirrored from PostAd.tsx) ---
+  // --- INTELLIGENT CATEGORY FILTERING ---
   const activeCategories = categories.filter(c => c.active);
   const activeBrands = brands.filter(b => b.active);
 
@@ -350,38 +349,50 @@ export const AdminListings: React.FC = () => {
         </div>
       ) : (
         <div className="grid gap-6">
-          {pendingProducts.map(product => (
-            <div key={product.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-6">
-               <img src={product.images[0]} alt={product.title} className="w-full md:w-48 h-32 object-cover rounded-lg" />
-               <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                     <div>
-                       <h3 className="font-bold text-lg text-gray-900">{product.title}</h3>
-                       <p className="text-gray-500 text-sm mb-2">Vendedor: {product.sellerName}</p>
-                       <p className="text-brand-600 font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}</p>
-                     </div>
-                     <Link to={`/produto/${product.id}`} target="_blank" className="text-gray-400 hover:text-brand-600">
-                       <ExternalLink size={20} />
-                     </Link>
-                  </div>
-                  <p className="text-gray-600 text-sm mt-3 line-clamp-2">{product.description}</p>
-                  <div className="mt-4 flex gap-4">
-                     <button 
-                       onClick={() => approveProduct(product.id)}
-                       className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition"
-                     >
-                       <Check size={16} /> Aprovar
-                     </button>
-                     <button 
-                       onClick={() => rejectProduct(product.id)}
-                       className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg font-bold text-sm hover:bg-red-200 transition"
-                     >
-                       <X size={16} /> Rejeitar
-                     </button>
-                  </div>
-               </div>
-            </div>
-          ))}
+          {pendingProducts.map(product => {
+            const hasImages = Array.isArray(product.images) && product.images.length > 0;
+            const displayImage = hasImages ? product.images[0] : null;
+
+            return (
+              <div key={product.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-6">
+                 {displayImage ? (
+                   <img src={displayImage} alt={product.title} className="w-full md:w-48 h-32 object-cover rounded-lg" />
+                 ) : (
+                   <div className="w-full md:w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                      <ImageOff size={32} />
+                   </div>
+                 )}
+                 
+                 <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                       <div>
+                         <h3 className="font-bold text-lg text-gray-900">{product.title}</h3>
+                         <p className="text-gray-500 text-sm mb-2">Vendedor: {product.sellerName}</p>
+                         <p className="text-brand-600 font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}</p>
+                       </div>
+                       <Link to={`/produto/${product.id}`} target="_blank" className="text-gray-400 hover:text-brand-600">
+                         <ExternalLink size={20} />
+                       </Link>
+                    </div>
+                    <p className="text-gray-600 text-sm mt-3 line-clamp-2">{product.description}</p>
+                    <div className="mt-4 flex gap-4">
+                       <button 
+                         onClick={() => approveProduct(product.id)}
+                         className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition"
+                       >
+                         <Check size={16} /> Aprovar
+                       </button>
+                       <button 
+                         onClick={() => rejectProduct(product.id)}
+                         className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg font-bold text-sm hover:bg-red-200 transition"
+                       >
+                         <X size={16} /> Rejeitar
+                       </button>
+                    </div>
+                 </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
