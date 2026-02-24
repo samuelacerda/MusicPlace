@@ -46,7 +46,7 @@ export const BlogPostPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                      <Calendar size={18} />
-                     {new Date(post.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                     {new Date(post.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })}
                   </div>
                </div>
             </div>

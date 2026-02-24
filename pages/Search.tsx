@@ -321,7 +321,7 @@ export const SearchPage: React.FC = () => {
 
               {/* 4. PREÇO */}
               <div>
-                <h3 className="font-bold text-gray-900 mb-2">Preço (R$)</h3>
+                <h3 className="font-bold text-gray-900 mb-2">Preço ($)</h3>
                 <div className="flex items-center gap-2">
                    <input 
                      type="number" 

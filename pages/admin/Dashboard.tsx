@@ -2,12 +2,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
-import { Users, ShoppingBag, DollarSign, AlertTriangle, Download, TrendingUp, BarChart2, Calendar } from 'lucide-react';
+import { Users, ShoppingBag, DollarSign, AlertTriangle, Download, TrendingUp, BarChart2, Calendar, Database, Loader2 } from 'lucide-react';
+import { seedFakeAds } from '../../services/seedService';
 
 export const AdminDashboard: React.FC = () => {
-  const { users, products } = useAppStore();
+  const { users, products, currentUser, fetchData } = useAppStore();
   const navigate = useNavigate();
   const [filterPeriod, setFilterPeriod] = useState<'week' | 'month'>('week');
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeed = async () => {
+    if (!currentUser) return;
+    setSeeding(true);
+    try {
+        await seedFakeAds(20, currentUser.id);
+        await fetchData();
+        alert('20 anúncios fakes criados com sucesso!');
+    } catch (err: any) {
+        alert('Erro ao criar anúncios: ' + err.message);
+    } finally {
+        setSeeding(false);
+    }
+  };
 
   const pendingProducts = products.filter(p => p.status === 'pending').length;
   const activeProducts = products.filter(p => p.status === 'active').length;
@@ -113,6 +129,14 @@ export const AdminDashboard: React.FC = () => {
             >
             <Download size={18} /> Exportar Excel
             </button>
+            <button 
+            onClick={handleSeed}
+            disabled={seeding}
+            className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-brand-700 transition shadow-sm disabled:opacity-50"
+            >
+            {seeding ? <Loader2 className="animate-spin" size={18} /> : <Database size={18} />}
+            Gerar Anúncios Fakes
+            </button>
         </div>
       </div>
       
@@ -158,7 +182,7 @@ export const AdminDashboard: React.FC = () => {
               </div>
            </div>
            <h3 className="text-gray-500 text-sm font-medium">Receita Estimada (Mês)</h3>
-           <p className="text-3xl font-bold text-gray-900">R$ 12.450</p>
+           <p className="text-3xl font-bold text-gray-900">$ 12,450</p>
         </div>
       </div>
 

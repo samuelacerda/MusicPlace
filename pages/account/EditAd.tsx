@@ -106,7 +106,7 @@ export const EditAd: React.FC = () => {
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
                  <input 
                     type="number" 
                     className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 focus:ring-2 focus:ring-brand-500 outline-none"

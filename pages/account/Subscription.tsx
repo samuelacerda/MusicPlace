@@ -105,7 +105,7 @@ export const Subscription: React.FC = () => {
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between text-sm border-b border-gray-200 pb-3">
                                     <span className="text-gray-500">Valor Mensal</span>
-                                    <span className="font-bold text-gray-900">R$ {currentPlan?.price.toFixed(2)}</span>
+                                    <span className="font-bold text-gray-900">$ {currentPlan?.price.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm border-b border-gray-200 pb-3">
                                     <span className="text-gray-500">Próxima Renovação</span>
@@ -245,7 +245,7 @@ export const Subscription: React.FC = () => {
                           <div className="p-6 flex-1 flex flex-col">
                               <div className="mb-6">
                                   <span className="text-3xl font-bold text-gray-900">
-                                      {plan.price === 0 ? 'Grátis' : `R$ ${plan.price.toFixed(2)}`}
+                                      {plan.price === 0 ? 'Grátis' : `$ ${plan.price.toFixed(2)}`}
                                   </span>
                                   {plan.price > 0 && <span className="text-gray-500 text-sm font-medium">/mês</span>}
                               </div>

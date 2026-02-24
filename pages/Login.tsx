@@ -1,18 +1,33 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, AlertCircle, Loader2, ShieldAlert } from 'lucide-react';
+import { Mail, Lock, ArrowRight, AlertCircle, Loader2, ShieldAlert, Database } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { supabase } from '../services/supabase';
+import { seedFakeAds } from '../services/seedService';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAppStore();
+  const { login, fetchData } = useAppStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+        await seedFakeAds(20, 'u1');
+        await fetchData();
+        alert('20 anúncios fakes criados com sucesso!');
+    } catch (err: any) {
+        alert('Erro ao criar anúncios: ' + err.message);
+    } finally {
+        setSeeding(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,6 +237,17 @@ export const Login: React.FC = () => {
                 Use este botão se estiver travado no login.<br/>
                 Cria usuário: <strong>admin.root@musicplace.com</strong>
             </p>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-gray-100">
+            <button 
+                onClick={handleSeed}
+                disabled={seeding}
+                className="w-full bg-brand-50 text-brand-700 text-xs font-bold py-3 rounded-lg hover:bg-brand-100 transition flex items-center justify-center gap-2 border border-brand-200"
+            >
+                {seeding ? <Loader2 className="animate-spin h-4 w-4" /> : <Database size={14} />}
+                🚀 GERAR 20 ANÚNCIOS FAKES
+            </button>
         </div>
       </div>
     </div>

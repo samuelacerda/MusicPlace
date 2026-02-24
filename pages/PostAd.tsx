@@ -118,8 +118,8 @@ export const PostAd: React.FC = () => {
     // Convert to float (divide by 100 for cents)
     const amount = parseFloat(value) / 100;
 
-    // Format to PT-BR currency string
-    const formatted = amount.toLocaleString("pt-BR", {
+    // Format to EN-US currency string
+    const formatted = amount.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
@@ -143,8 +143,8 @@ export const PostAd: React.FC = () => {
         return;
     }
 
-    // Parse price string "1.234,56" back to float 1234.56
-    const priceFloat = parseFloat(formData.price.replace(/\./g, '').replace(',', '.'));
+    // Parse price string "1,234.56" back to float 1234.56
+    const priceFloat = parseFloat(formData.price.replace(/,/g, ''));
 
     const newProduct = {
       id: Date.now().toString(),
@@ -369,7 +369,7 @@ export const PostAd: React.FC = () => {
 
           {/* 8. PREÇO E OPÇÕES */}
           <div>
-             <label className="block text-sm font-bold text-gray-900 mb-1">10. Preço (R$)</label>
+             <label className="block text-sm font-bold text-gray-900 mb-1">10. Preço ($)</label>
              <div className="relative">
                <input 
                 type="text"

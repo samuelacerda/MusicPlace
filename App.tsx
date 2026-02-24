@@ -38,6 +38,7 @@ import { AdminTheme } from './pages/admin/Theme';
 import { AdminContent } from './pages/admin/Content';
 import { AdminMarketing } from './pages/admin/Marketing';
 import { AdminBlog } from './pages/admin/Blog';
+import { AdminAffiliateRanking } from './pages/admin/AdminAffiliateRanking';
 
 // Account Imports
 import { AccountLayout } from './pages/account/AccountLayout';
@@ -77,6 +78,7 @@ function App() {
         <Route path="/admin/marketing" element={<AdminLayout><AdminMarketing /></AdminLayout>} />
         <Route path="/admin/reports" element={<AdminLayout><div>Em breve</div></AdminLayout>} />
         <Route path="/admin/blog" element={<AdminLayout><AdminBlog /></AdminLayout>} />
+        <Route path="/admin/affiliates" element={<AdminLayout><AdminAffiliateRanking /></AdminLayout>} />
 
         {/* Public Routes */}
         <Route path="*" element={

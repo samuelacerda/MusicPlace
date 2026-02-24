@@ -171,7 +171,7 @@ export const ProductDetails: React.FC = () => {
 
            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 mb-8">
               <p className="text-4xl font-bold text-brand-600 mb-4">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
+                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.price)}
               </p>
               
               <div className="flex flex-wrap gap-3 mb-6">

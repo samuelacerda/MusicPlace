@@ -82,7 +82,7 @@ export const ProductListCard: React.FC<Props> = ({ product }) => {
 
         <div className="flex items-end justify-between mt-auto">
            <p className="text-lg font-bold text-gray-900">
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
+            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.price)}
           </p>
           
           <button 

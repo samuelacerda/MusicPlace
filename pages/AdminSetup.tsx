@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, User, CheckCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import { Shield, Lock, User, CheckCircle, AlertCircle, Loader2, Database } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { useAppStore } from '../store/useAppStore';
+import { seedFakeAds } from '../services/seedService';
 
 export const AdminSetup: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAppStore();
+  const { login, currentUser, fetchData } = useAppStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,8 +16,24 @@ export const AdminSetup: React.FC = () => {
     confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const handleSeed = async () => {
+    const userId = currentUser?.id || 'u1'; // Fallback to admin u1 if not logged in
+    setSeeding(true);
+    setError('');
+    try {
+        await seedFakeAds(20, userId);
+        await fetchData();
+        alert('20 anúncios fakes criados com sucesso!');
+    } catch (err: any) {
+        setError('Erro ao criar anúncios: ' + err.message);
+    } finally {
+        setSeeding(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,6 +190,19 @@ export const AdminSetup: React.FC = () => {
                     >
                         {loading ? <Loader2 className="animate-spin" /> : 'Criar Administrador'}
                     </button>
+
+                    <div className="mt-6 pt-6 border-t border-gray-100">
+                        <p className="text-sm font-bold text-gray-900 mb-2">Ferramentas de Desenvolvedor</p>
+                        <button 
+                            type="button"
+                            onClick={handleSeed}
+                            disabled={seeding}
+                            className="w-full bg-brand-50 text-brand-700 font-bold py-3 rounded-lg hover:bg-brand-100 transition flex items-center justify-center gap-2 border border-brand-200"
+                        >
+                            {seeding ? <Loader2 className="animate-spin" /> : <Database size={18} />}
+                            Gerar 20 Anúncios Fakes
+                        </button>
+                    </div>
                 </form>
             )}
 

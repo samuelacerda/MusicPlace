@@ -265,7 +265,7 @@ export const AdminListings: React.FC = () => {
                             <input type="text" required className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900" value={newAd.title} onChange={e => setNewAd({...newAd, title: e.target.value})} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
                             <input type="number" required className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900" value={newAd.price} onChange={e => setNewAd({...newAd, price: e.target.value})} />
                         </div>
                     </div>
@@ -368,7 +368,7 @@ export const AdminListings: React.FC = () => {
                        <div>
                          <h3 className="font-bold text-lg text-gray-900">{product.title}</h3>
                          <p className="text-gray-500 text-sm mb-2">Vendedor: {product.sellerName}</p>
-                         <p className="text-brand-600 font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}</p>
+                         <p className="text-brand-600 font-bold">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.price)}</p>
                        </div>
                        <Link to={`/produto/${product.id}`} target="_blank" className="text-gray-400 hover:text-brand-600">
                          <ExternalLink size={20} />

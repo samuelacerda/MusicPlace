@@ -425,7 +425,7 @@ export const Register: React.FC = () => {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">Mais Popular</div>
           <h3 className="text-xl font-bold text-gray-900">Profissional</h3>
           <div className="my-4">
-            <span className="text-4xl font-extrabold text-gray-900">R$ 29,90</span>
+            <span className="text-4xl font-extrabold text-gray-900">$ 29.90</span>
             <span className="text-gray-500">/mês</span>
           </div>
           <ul className="space-y-3 text-sm text-gray-600 mb-8">
@@ -443,7 +443,7 @@ export const Register: React.FC = () => {
         >
            <h3 className="text-xl font-bold text-gray-900">Loja Oficial</h3>
           <div className="my-4">
-            <span className="text-4xl font-extrabold text-gray-900">R$ 99,90</span>
+            <span className="text-4xl font-extrabold text-gray-900">$ 99.90</span>
             <span className="text-gray-500">/mês</span>
           </div>
           <ul className="space-y-3 text-sm text-gray-600 mb-8">

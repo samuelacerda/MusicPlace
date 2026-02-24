@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, ShoppingBag, LogOut, Music, AlertOctagon, Image, Layers, Tag, Ticket, CreditCard, Settings, Palette, FileText, Megaphone, ArrowLeftCircle, BookOpen, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingBag, LogOut, Music, AlertOctagon, Image, Layers, Tag, Ticket, CreditCard, Settings, Palette, FileText, Megaphone, ArrowLeftCircle, BookOpen, Menu, X, Trophy } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -133,6 +133,10 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <Link to="/admin/users" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/users')}`}>
                <Users size={20} />
                <span>Gerenciar Usuários</span>
+            </Link>
+            <Link to="/admin/affiliates" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/affiliates')}`}>
+               <Trophy size={20} />
+               <span>Ranking de Afiliados</span>
             </Link>
              <Link to="/admin/reports" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive('/admin/reports')}`}>
                <AlertOctagon size={20} />

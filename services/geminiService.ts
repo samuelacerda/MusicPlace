@@ -44,17 +44,17 @@ export const estimatePrice = async (
   title: string,
   condition: Condition
 ): Promise<string> => {
-  if (!apiKey) return "R$ 0,00 - R$ 0,00 (Sem API Key)";
+  if (!apiKey) return "$ 0.00 - $ 0.00 (No API Key)";
 
   try {
     const prompt = `
       Baseado no mercado de instrumentos musicais usados no Brasil (Mercado Livre, OLX, lojas especializadas),
-      estime uma faixa de preço justa (em Reais R$) para vender rápido e vender bem o seguinte item:
+      estime uma faixa de preço justa (em Dólares $) para vender rápido e vender bem o seguinte item:
       
       Item: ${title}
       Condição: ${condition}
       
-      Responda APENAS com a faixa de preço. Exemplo: "R$ 1.500 - R$ 1.800".
+      Responda APENAS com a faixa de preço. Exemplo: "$ 1,500 - $ 1,800".
       Não adicione texto extra.
     `;
 

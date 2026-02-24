@@ -1,6 +1,8 @@
 
 
 
+
+
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Save, Globe, CreditCard, Shield, Server, RotateCcw, Mail, MessageSquare, Send, CheckCircle, AlertCircle, Bot, Eye, EyeOff, Lock, QrCode } from 'lucide-react';
@@ -52,15 +54,6 @@ export const AdminSettings: React.FC = () => {
           whatsappConfig: { ...formData.whatsappConfig, [key]: value }
       });
   };
-
-  // Helper to check if MP keys look like production
-  const getKeyStatus = (key: string) => {
-      if (!key) return 'empty';
-      if (key.startsWith('TEST-')) return 'test';
-      return 'production';
-  };
-
-  const mpStatus = getKeyStatus(formData.mercadoPagoPublicKey || '');
 
   return (
     <div className="max-w-6xl pb-20">
@@ -317,20 +310,6 @@ export const AdminSettings: React.FC = () => {
              <div className="space-y-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Gateway de Pagamento</h3>
                 
-                {mpStatus === 'production' && (
-                    <div className="bg-green-50 text-green-800 p-4 rounded-lg border border-green-200 flex items-center gap-2 mb-4">
-                        <CheckCircle size={20} /> 
-                        <span className="font-bold">Modo Produção Ativo:</span> O sistema está processando pagamentos reais.
-                    </div>
-                )}
-                
-                {mpStatus === 'test' && (
-                    <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-200 flex items-center gap-2 mb-4">
-                        <Shield size={20} /> 
-                        <span className="font-bold">Modo Sandbox (Teste):</span> Use cartões de teste para validar o fluxo.
-                    </div>
-                )}
-
                 <div>
                    <label className="block font-medium text-gray-900 mb-2">Provedor Principal</label>
                    <select 
@@ -338,54 +317,40 @@ export const AdminSettings: React.FC = () => {
                      value={formData.paymentGateway}
                      onChange={(e) => setFormData({...formData, paymentGateway: e.target.value as any})}
                    >
-                      <option value="mercadopago">Mercado Pago (Brasil)</option>
-                      <option value="stripe">Stripe (Global)</option>
-                      <option value="pix_manual">Pix Manual</option>
+                      <option value="abacatepay">Abacate Pay (PIX Automático)</option>
+                      <option value="manual">Manual (Combinar com Vendedor)</option>
                    </select>
                 </div>
 
-                {formData.paymentGateway === 'mercadopago' && (
-                   <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 space-y-4">
-                      <h4 className="font-bold text-blue-900">Credenciais Mercado Pago</h4>
-                      <div>
-                         <label className="block text-xs font-bold text-blue-800 mb-1">Public Key</label>
-                         <input type="text" className="w-full p-2 border border-blue-200 rounded bg-white text-gray-900 font-mono" value={formData.mercadoPagoPublicKey || ''} onChange={(e) => setFormData({...formData, mercadoPagoPublicKey: e.target.value})} placeholder="APP_USR-..." />
-                         <p className="text-[10px] text-blue-600 mt-1">Para produção, use a chave que começa com APP_USR-. Para teste, use TEST-.</p>
+                {formData.paymentGateway === 'abacatepay' && (
+                   <div className="bg-green-50 p-6 rounded-lg border border-green-100 space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-bold text-green-900">Credenciais Abacate Pay</h4>
+                          <span className="bg-green-200 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Recomendado</span>
                       </div>
+                      <p className="text-sm text-green-700 mb-4">
+                          A melhor opção para receber via PIX com baixa taxa e aprovação instantânea.
+                      </p>
                       <div>
-                         <label className="block text-xs font-bold text-blue-800 mb-1">Access Token</label>
+                         <label className="block text-xs font-bold text-green-800 mb-1">API Key (Chave de API)</label>
                          <div className="relative">
                             <input 
                                 type={showToken ? "text" : "password"} 
-                                className="w-full p-2 pr-10 border border-blue-200 rounded bg-white text-gray-900 font-mono" 
-                                value={formData.mercadoPagoAccessToken || ''} 
-                                onChange={(e) => setFormData({...formData, mercadoPagoAccessToken: e.target.value})} 
-                                placeholder="APP_USR-..."
+                                className="w-full p-2 pr-10 border border-green-200 rounded bg-white text-gray-900 font-mono" 
+                                value={formData.abacatePayApiKey || ''} 
+                                onChange={(e) => setFormData({...formData, abacatePayApiKey: e.target.value})} 
+                                placeholder="abacate_live_..."
                             />
                             <button 
                                 type="button"
                                 onClick={() => setShowToken(!showToken)}
-                                className="absolute right-2 top-2.5 text-blue-400 hover:text-blue-600"
+                                className="absolute right-2 top-2.5 text-green-400 hover:text-green-600"
                             >
                                 {showToken ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                          </div>
-                      </div>
-                      
-                      {/* PIX Key Input */}
-                      <div className="pt-4 border-t border-blue-200 mt-4">
-                         <label className="block text-xs font-bold text-blue-800 mb-1 flex items-center gap-1">
-                            <QrCode size={14} /> Chave PIX (Para Recebimento)
-                         </label>
-                         <input 
-                            type="text" 
-                            className="w-full p-2 border border-blue-200 rounded bg-white text-gray-900 font-mono" 
-                            value={formData.mercadoPagoPixKey || ''} 
-                            onChange={(e) => setFormData({...formData, mercadoPagoPixKey: e.target.value})} 
-                            placeholder="CPF, CNPJ, E-mail ou Chave Aleatória" 
-                         />
-                         <p className="text-[10px] text-blue-600 mt-1">
-                            Insira sua chave PIX cadastrada no Mercado Pago. O sistema gerará QR Codes apontando para esta chave.
+                         <p className="text-[10px] text-green-600 mt-1">
+                            Obtenha sua chave no painel do <a href="https://abacatepay.com" target="_blank" rel="noreferrer" className="underline font-bold">Abacate Pay</a>.
                          </p>
                       </div>
                    </div>
@@ -429,6 +394,40 @@ export const AdminSettings: React.FC = () => {
                       <p className="text-sm text-yellow-800">
                           <strong>Nota de Segurança:</strong> As senhas de SMTP são armazenadas com criptografia simulada no banco de dados local. Em produção, utilize variáveis de ambiente.
                       </p>
+                   </div>
+                </div>
+
+                <div className="pt-6 border-t border-gray-100">
+                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><RotateCcw size={20} /> Ferramentas de Dados</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                         <h4 className="font-bold text-gray-900 mb-1">Sincronizar com Supabase</h4>
+                         <p className="text-xs text-gray-500 mb-4">Força o recarregamento de todos os dados diretamente do banco de dados remoto.</p>
+                         <button 
+                           onClick={async () => {
+                             await useAppStore.getState().fetchData();
+                             alert('Dados sincronizados com sucesso!');
+                           }}
+                           className="bg-brand-600 text-white px-4 py-2 rounded font-bold text-sm hover:bg-brand-700 transition flex items-center gap-2"
+                         >
+                            <RotateCcw size={14} /> Sincronizar Agora
+                         </button>
+                      </div>
+                      <div className="p-4 border border-red-100 rounded-lg bg-red-50">
+                         <h4 className="font-bold text-red-900 mb-1">Limpar Cache Local</h4>
+                         <p className="text-xs text-red-700 mb-4">Remove todos os dados do LocalStorage e reinicia a aplicação. Útil se houver conflitos de versão.</p>
+                         <button 
+                           onClick={() => {
+                             if (confirm('Tem certeza que deseja limpar o cache local? Você será deslogado.')) {
+                               localStorage.clear();
+                               window.location.reload();
+                             }
+                           }}
+                           className="bg-red-600 text-white px-4 py-2 rounded font-bold text-sm hover:bg-red-700 transition flex items-center gap-2"
+                         >
+                            <Shield size={14} /> Limpar Tudo
+                         </button>
+                      </div>
                    </div>
                 </div>
 

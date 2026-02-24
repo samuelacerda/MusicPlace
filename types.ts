@@ -300,10 +300,8 @@ export interface SystemSettings {
   sellCtaImage: string;
 
   // Payment
-  paymentGateway: 'mercadopago' | 'stripe' | 'pix_manual';
-  mercadoPagoPublicKey?: string;
-  mercadoPagoAccessToken?: string;
-  mercadoPagoPixKey?: string; // Nova Chave PIX
+  paymentGateway: 'abacatepay' | 'manual';
+  abacatePayApiKey?: string; // API Key do Abacate Pay
   recurringPayments: boolean;
   extraFeesPercentage: number;
   

@@ -69,7 +69,7 @@ export const MyAds: React.FC = () => {
                        </div>
                     </div>
                     <p className="text-brand-600 font-bold mb-1">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
+                      {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.price)}
                     </p>
                     <p className="text-xs text-gray-500 flex items-center gap-1">
                       <Clock size={12} /> Publicado em {new Date(product.createdAt).toLocaleDateString()}

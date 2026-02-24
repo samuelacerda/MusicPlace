@@ -67,7 +67,7 @@ export const AdminCoupons: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Desconto</label>
                 <select className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.discountType} onChange={e => setFormData({...formData, discountType: e.target.value as any})}>
                   <option value="percentage">Porcentagem (%)</option>
-                  <option value="fixed">Valor Fixo (R$)</option>
+                  <option value="fixed">Fixed Value ($)</option>
                 </select>
              </div>
              <div>
@@ -119,7 +119,7 @@ export const AdminCoupons: React.FC = () => {
                                 {c.code}
                             </span>
                         </td>
-                        <td className="p-4 font-medium">{c.value} {c.discountType === 'percentage' ? '%' : 'R$'}</td>
+                        <td className="p-4 font-medium">{c.value} {c.discountType === 'percentage' ? '%' : '$'}</td>
                         <td className="p-4 text-gray-500">{c.usageCount} vezes</td>
                         <td className="p-4">
                         {c.active ? 

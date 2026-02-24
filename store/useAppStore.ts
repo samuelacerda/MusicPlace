@@ -1,6 +1,8 @@
 
 
 
+
+
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { Product, UserProfile, ProductStatus, Notification, Message, Banner, Category, Brand, Plan, Coupon, SystemSettings, ThemeConfig, ContentPage, MarketingConfig, Log, BlogPost, Ticket } from '../types';
@@ -163,7 +165,9 @@ export const useAppStore = create<AppState>()(
       // Configs
       systemSettings: {
           ...SEED_DATABASE.settings,
-          mercadoPagoPixKey: SEED_DATABASE.settings.mercadoPagoPixKey || '' // Init if missing
+          // Ensure Abacate Pay defaults are set if migrating from older store version
+          paymentGateway: 'abacatepay',
+          abacatePayApiKey: SEED_DATABASE.settings.abacatePayApiKey || ''
       },
       theme: SEED_DATABASE.theme,
       contentPages: SEED_DATABASE.content,
@@ -175,49 +179,79 @@ export const useAppStore = create<AppState>()(
       // --- SUPABASE INTEGRATION ---
 
       fetchData: async () => {
-        // Limpeza de versões antigas (Cleanup)
-        const oldKeys = ['musicplace-db-v17', 'musicplace-db-v18', 'musicplace-db-v19', 'musicplace-db-v20', 'musicplace-db-v21'];
+        // Cleanup old versions
+        const oldKeys = ['musicplace-db-v17', 'musicplace-db-v18', 'musicplace-db-v19', 'musicplace-db-v20', 'musicplace-db-v21', 'musicplace-db-v22', 'musicplace-db-v23'];
         oldKeys.forEach(key => localStorage.removeItem(key));
 
-        if (!supabase) return;
+        if (!supabase) {
+          console.log("Supabase not configured, using local seed data.");
+          return;
+        }
+        
         set({ isLoading: true });
 
         try {
+          console.log("Fetching data from Supabase...");
+          
           // 1. Fetch Products
-          const { data: productsData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-          if (productsData) {
-             const mappedProducts = productsData.map((p: any) => ({
-                id: p.id,
-                userId: p.user_id,
-                title: p.title || '',
-                price: p.price,
-                // Ensure images is always an array
-                images: Array.isArray(p.images) ? p.images : [],
-                category: p.category || '',
-                subcategory: p.subcategory || '',
-                condition: p.condition,
-                brand: p.brand || '',
-                model: p.model || '',
-                year: p.year,
-                locationState: p.location_state || '',
-                locationCity: p.location_city || '',
-                description: p.description || '',
-                delivery: p.delivery,
-                sellerName: p.seller_name || 'Vendedor',
-                whatsapp: p.whatsapp || '',
-                status: p.status,
-                featured: p.featured,
-                acceptsNegotiation: p.accepts_negotiation,
-                acceptsTrade: p.accepts_trade,
-                createdAt: p.created_at,
-                expirationDate: p.expiration_date
-             }));
-             set({ products: mappedProducts as Product[] });
+          const { data: productsData, error: pError } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+          
+          if (pError) {
+            console.error("Error fetching products:", pError);
+          } else if (productsData) {
+             console.log(`Fetched ${productsData.length} products from Supabase.`);
+             
+             if (productsData.length > 0) {
+               const mappedProducts = productsData.map((p: any) => ({
+                  id: p.id,
+                  userId: p.user_id,
+                  title: p.title || '',
+                  price: p.price,
+                  images: Array.isArray(p.images) ? p.images : [],
+                  category: p.category || '',
+                  subcategory: p.subcategory || '',
+                  condition: p.condition,
+                  brand: p.brand || '',
+                  model: p.model || '',
+                  year: p.year,
+                  locationState: p.location_state || '',
+                  locationCity: p.location_city || '',
+                  description: p.description || '',
+                  delivery: p.delivery,
+                  sellerName: p.seller_name || 'Vendedor',
+                  whatsapp: p.whatsapp || '',
+                  status: p.status,
+                  featured: p.featured,
+                  acceptsNegotiation: p.accepts_negotiation,
+                  acceptsTrade: p.accepts_trade,
+                  createdAt: p.created_at,
+                  expirationDate: p.expiration_date
+               }));
+               
+               set({ products: mappedProducts as Product[] });
+             } else {
+               console.log("Supabase returned 0 products. Keeping current state if not empty.");
+               // If Supabase is empty but we have products in state (e.g. from SEED_DATABASE), 
+               // we might want to keep them for the first load.
+               // However, if the user explicitly deleted everything, this might be confusing.
+               // For now, let's only set if it's the first load and we have nothing.
+               if (get().products.length === 0) {
+                 // Keep SEED_DATABASE defaults
+               } else if (productsData.length === 0 && get().products.length > 0) {
+                 // If Supabase is empty but we have products, it means either:
+                 // 1. We are using seed data and Supabase hasn't been seeded yet.
+                 // 2. We deleted everything in Supabase and want to reflect that.
+                 // To be safe for the user, we'll only overwrite if we are sure.
+                 set({ products: [] }); 
+               }
+             }
           }
 
-          // 2. Fetch Profiles (Users)
-          const { data: usersData } = await supabase.from('profiles').select('*');
-          if (usersData) {
+          // 2. Fetch Profiles
+          const { data: usersData, error: uError } = await supabase.from('profiles').select('*');
+          if (uError) {
+            console.error("Error fetching profiles:", uError);
+          } else if (usersData) {
              const mappedUsers = usersData.map((u: any) => ({
                 id: u.id,
                 email: u.email || '',
@@ -242,7 +276,7 @@ export const useAppStore = create<AppState>()(
           }
 
         } catch (error) {
-          console.error("Error fetching data from Supabase:", error);
+          console.error("Unexpected error in fetchData:", error);
         } finally {
           set({ isLoading: false });
         }
@@ -536,7 +570,7 @@ export const useAppStore = create<AppState>()(
               status: product.status,
               featured: product.featured,
               accepts_negotiation: product.acceptsNegotiation,
-              accepts_trade: product.accepts_trade,
+              accepts_trade: product.acceptsTrade,
               expiration_date: expirationDate
            };
 
@@ -743,10 +777,10 @@ export const useAppStore = create<AppState>()(
       }
     }),
     {
-      name: 'musicplace-db-v23', // Update version to force refresh settings
+      name: 'musicplace-db-v24', // Bumped version
       storage: createJSONStorage(() => safeLocalStorage), // Use safe wrapper
       partialize: (state) => ({ 
-        // Only persist essential configuration and small data.
+        // Persist only essential configuration and small state to avoid QuotaExceeded errors
         notifications: state.notifications,
         messages: state.messages,
         favorites: state.favorites,

@@ -95,7 +95,7 @@ export const AdminPlans: React.FC = () => {
                <input type="text" required className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
              </div>
              <div>
-               <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$)</label>
+               <label className="block text-sm font-medium text-gray-700 mb-1">Preço ($)</label>
                <input type="number" step="0.01" required className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900" value={formData.price} onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})} />
              </div>
            </div>
@@ -200,7 +200,7 @@ export const AdminPlans: React.FC = () => {
                  <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
                  <p className="text-gray-500 text-sm mb-4 line-clamp-2">{plan.description}</p>
                  <div className="text-2xl font-bold text-gray-900 mb-6">
-                    R$ {plan.price.toFixed(2)} <span className="text-sm font-normal text-gray-500">/{getDurationLabel(plan.duration)}</span>
+                    $ {plan.price.toFixed(2)} <span className="text-sm font-normal text-gray-500">/{getDurationLabel(plan.duration)}</span>
                  </div>
                  <ul className="space-y-2 mb-6">
                     {plan.benefits.slice(0, 4).map((ben, idx) => (
